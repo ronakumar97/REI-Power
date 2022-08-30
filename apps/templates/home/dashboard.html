@@ -5,13 +5,14 @@
 
 Specific Page CSS goes HERE  -->
 {% block stylesheets %}
-<link rel="stylesheet" href="/static/assets/css/dashboard.css">
+<!-- <link rel="stylesheet" href="/static/assets/css/dashboard.css"> -->
 
 {% endblock stylesheets %}
 
 {% block content %}
 {% load static %} 
 
+</br></br>
 <body>
 <form action="/create_csv/" method="POST" enctype="multipart/form-data" class="form-horizontal"> 
 {% csrf_token %}
@@ -28,7 +29,7 @@ Specific Page CSS goes HERE  -->
                             <div class="col-md-6 col-lg-4">
                                 
                                 <div class="form-group">
-                                    <label for="exampleFormControlFile1" class="col-md-3 col-sm-3 col-xs-12 control-label">Input file</label>
+                                    <!-- <label for="exampleFormControlFile1" class="col-md-3 col-sm-3 col-xs-12 control-label">Input file</label> -->
                                     <input type="file" class="form-control-file" name="csv_file" id="csv_file">
                                 </div>
 
@@ -37,8 +38,9 @@ Specific Page CSS goes HERE  -->
                                          <button class="btn btn-primary"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>Upload </button>
                                     </div> 
                                 </div>
-                                
-                    
+                            </div>    
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -46,17 +48,75 @@ Specific Page CSS goes HERE  -->
 </div>
 </form>
 
-<div>{{html | safe}}</div>
+<div class="col-md-12">
+   
+        <!-- <div class="card-header">
+            <h4 class="card-title"></h4>
+        </div> -->
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="multi-filter-select" class="display table table-striped table-hover" >
+                    <thead>
+                    <tr>
+                        {% for col in dataframe.columns %}
+                          <th>
+                            {{col}}      </th>
+                        {% endfor %}
+                      </tr>
+                    </thead>
+                    <!-- <tfoot>
+                        <tr>
+                        {% for col in dataframe.columns %}
+                          <th>
+                            {{col}}      </th>
+                        {% endfor %}
+                      </tr>
+                    </tfoot> -->
+                      <tbody>
+                        {% for index, row in dataframe.iterrows %}
+                        <tr>
+                          {% for cell in row %}
+                            <td>
+                              {{cell}}
+                            </td>
+                          {% endfor %}
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+                 </table>
 
-<form action="/create_csv/" method="GET" class="form-horizontal"> 
-{% csrf_token %}
-<div class="form-group">                    
-    <div class="col-md-3 col-sm-3 col-xs-12 col-md-offset-3" style="margin-bottom:10px;">
-         <button class="btn btn-primary"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>Download</button>
-    </div> 
+            </div>
+        </div>
+    
 </div>
-
+<form action="/create_csv/" method="GET" class="form-horizontal"> 
+    {% csrf_token %}
+    <div class="form-group">                    
+        <div class="col-md-3 col-sm-3 col-xs-12 col-md-offset-3" style="margin-bottom:10px;">
+             <button class="btn btn-primary"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>Download</button>
+        </div> 
+    </div>
 </form>
+<!-- <table>
+    <tr>
+      {% for col in dataframe.columns %}
+        <td>
+          {{col}}      </td>
+      {% endfor %}
+    </tr>
+      {% for index, row in dataframe.iterrows %}
+        <tr>
+          {% for cell in row %}
+            <td>
+              {{cell}}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+  </table> -->
+
+
+
 <!-- <div class="card-action">
     <button class="btn btn-success">Submit</button>
     <button class="btn btn-danger">Cancel</button>
@@ -69,4 +129,3 @@ Specific Page CSS goes HERE  -->
 {% endblock javascripts %}	
 </body>
 
-</html>

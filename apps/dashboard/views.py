@@ -38,10 +38,10 @@ def create_csv(request):
 
         df['Result'] = result
         result = df.to_html(index=False)
-        print(result)
+        print(df)
         request.session['result'] = df.to_json(orient="records")
         html_template = loader.get_template('home/dashboard.html')
-        return HttpResponse(html_template.render({"html":result}, request))
+        return HttpResponse(html_template.render({"html":result, "dataframe":df}, request))
                    
     else:
         df = pd.DataFrame()
