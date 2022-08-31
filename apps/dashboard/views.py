@@ -18,28 +18,59 @@ def index(request):
     html_template = loader.get_template('home/dashboard.html')
     return HttpResponse(html_template.render(context, request))
 
+def is_free_cooling_operation(df):
+    is_free_cooling_operation_results = []
+
+    for index, row in df.iterrows():
+        try:
+            if((float(row['CP2.CHOAT']) > 60) and (row['CP2.CH1.M5'] or row['CP2.CH2.M10'])):
+                is_free_cooling_operation_results.append(1)
+            else:
+                is_free_cooling_operation_results.append(0)
+        except:
+            is_free_cooling_operation_results.append(-1)
+            continue
+
+    results_df = df[['CP2.CHOAT', 'CP2.CH1.M5', 'CP2.CH2.M10']]
+    results_df['is_free_cooling_operation_results'] = is_free_cooling_operation_results
+
+    return results_df
+
+def fault_rule_implementation():
+    df = pd.read_csv('/home/ubuntu/PycharmProjects/rei_power/column_mapping.csv', header=None)
+    column_mappings = {}
+    for index, row in df.iterrows():
+        row[0] = row[0].split(':')[0]
+        column_mappings[row[0]] = row[1]
+
+    df = pd.read_csv('/home/ubuntu/PycharmProjects/rei_power/CP2 COOLING_data.csv', sep="\t")
+    df = df.iloc[:, :-1]
+    df = df.rename(columns={'<>Date': 'Date'})
+    df = df.rename(columns=column_mappings)
+
+    df = df[:-1]
+
+    df.replace({'OFF': 0, 'ON': 1}, inplace=True)
+
+    return df
 
 @csrf_exempt
 def create_csv(request):
     
     if request.method == 'POST':
+
+        # TODO: Make two buttons (one for uploading the column mapping and other for uploading the data in the CSV)
         csv_file = request.FILES["csv_file"]
         df = pd.read_csv(csv_file)
-        # df = pd.read_csv('C:/Users/lifec/Desktop/sensor_data.csv')
         df = df.reset_index(drop=True)
 
-        result = []
+        df = fault_rule_implementation()
 
-        for index, row in df.iterrows():
-            if (row['A'] == row['B']):
-                result.append('T')
-            else:
-                result.append('F')
+        is_free_cooling_operation_results_df = is_free_cooling_operation(df)
 
-        df['Result'] = result
-        result = df.to_html(index=False)
+        result = is_free_cooling_operation_results_df.to_html(index=False)
         print(df)
-        request.session['result'] = df.to_json(orient="records")
+        request.session['result'] = is_free_cooling_operation_results_df.to_json(orient="records")
         html_template = loader.get_template('home/dashboard.html')
         return HttpResponse(html_template.render({"html":result, "dataframe":df}, request))
                    
