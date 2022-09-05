@@ -36,6 +36,59 @@ def is_free_cooling_operation(df):
 
     return results_df
 
+def chiller_water_temp_diff(df):
+    chiller_water_temp_diff_results = []
+
+    for index, row in df.iterrows():
+        try:
+            if (abs(row['CDWST'], row['CDWRT']) < 5 and (row['CP2CH1M5'] or row['CP2CH2M10'])):
+                chiller_water_temp_diff_results.append(1)
+            else:
+                chiller_water_temp_diff_results.append(0)
+        except:
+            chiller_water_temp_diff_results.append(-1)
+            continue
+
+    results_df = df[['CDWST', 'CDWRT', 'CP2CH1M5', 'CP2.CH2.M10']]
+    results_df['chiller_water_temp_diff_results'] = chiller_water_temp_diff_results
+
+    return results_df
+def condensor_water_temp_diff(df):
+    condensor_water_temp_diff_results = []
+
+    for index, row in df.iterrows():
+        try:
+            if(abs(row['CCHWST'], row['CCHWRT']) < 5 and (row['CP2CH1M5'] or row['CP2CH2M10'])):
+                condensor_water_temp_diff_results.append(1)
+            else:
+                condensor_water_temp_diff_results.append(0)
+        except:
+            condensor_water_temp_diff_results.append(-1)
+            continue
+
+    results_df = df[['CCHWST', 'CCHWRT', 'CP2CH1M5', 'CP2.CH2.M10']]
+    results_df['condensor_water_temp_diff_results'] = condensor_water_temp_diff_results
+
+    return results_df
+
+def condensor_water_reset_temp(df):
+    condensor_water_return_temp_results = []
+
+    for index, row in df.iterrows():
+        try:
+            if(row['CDWRT'] > (row['CP2.CHOAT'] + 7)):
+                condensor_water_return_temp_results.append(1)
+            else:
+                condensor_water_return_temp_results.append(0)
+        except:
+            condensor_water_return_temp_results.append(-1)
+            continue
+
+    results_df = df[['CDWRT', 'CP2.CHOAT']]
+    results_df['condensor_water_return_temp_results'] = condensor_water_return_temp_results
+
+    return results_df
+
 def fault_rule_implementation():
     df = pd.read_csv('/home/ubuntu/PycharmProjects/rei_power/column_mapping.csv', header=None)
     column_mappings = {}
@@ -67,8 +120,17 @@ def create_csv(request):
         df = fault_rule_implementation()
 
         is_free_cooling_operation_results_df = is_free_cooling_operation(df)
+        chiller_water_temp_diff_results_df = chiller_water_temp_diff(df)
+        condensor_water_temp_diff_results_df = chiller_water_temp_diff(df)
+        condensor_water_reset_temp_results_df = condensor_water_reset_temp(df)
+
+        # TODO: Dropdown to select which faults to choose
 
         result = is_free_cooling_operation_results_df.to_html(index=False)
+        # result = chiller_water_temp_diff.to_html(index=False)
+        # result = condensor_water_temp_diff_results_df.to_html(index=False)
+        # result = condensor_water_reset_temp_results_df.to_html(index=False)
+
         print(df)
         request.session['result'] = is_free_cooling_operation_results_df.to_json(orient="records")
         html_template = loader.get_template('home/dashboard.html')
