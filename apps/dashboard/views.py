@@ -10,7 +10,7 @@ import json
 #from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.csrf import csrf_exempt
 import csv
-
+import numpy as np
 
 def index(request):
     context = {}
@@ -18,76 +18,35 @@ def index(request):
     html_template = loader.get_template('home/dashboard.html')
     return HttpResponse(html_template.render(context, request))
 
-def is_free_cooling_operation(df):
-    is_free_cooling_operation_results = []
+def is_free_cooling_operation(CP2CHOAT, CP2CH1M5, CP2CH2M10):
+    try:
+        if ((float(CP2CHOAT) < 60) and (CP2CH1M5 or CP2CH2M10)):
+            return True
+        return False
+    except:
+        return np.NaN
 
-    for index, row in df.iterrows():
-        try:
-            if((float(row['CP2.CHOAT']) < 60) and (row['CP2.CH1.M5'] or row['CP2.CH2.M10'])):
-                is_free_cooling_operation_results.append(1)
-            else:
-                is_free_cooling_operation_results.append(0)
-        except:
-            is_free_cooling_operation_results.append(-1)
-            continue
-
-    results_df = df[['CP2.CHOAT', 'CP2.CH1.M5', 'CP2.CH2.M10']]
-    results_df['is_free_cooling_operation_results'] = is_free_cooling_operation_results
-
-    return results_df
-
-def chiller_water_temp_diff(df):
-    chiller_water_temp_diff_results = []
-
-    for index, row in df.iterrows():
-        try:
-            if (abs(float(row['CCHWST']) - float(row['CCHWRT'])) < 5 and (row['CP2CH1M5'] or row['CP2CH2M10'])):
-                chiller_water_temp_diff_results.append(1)
-            else:
-                chiller_water_temp_diff_results.append(0)
-        except:
-            chiller_water_temp_diff_results.append(-1)
-            continue
-
-    results_df = df[['CCHWST', 'CCHWRT', 'CP2CH1M5', 'CP2.CH2.M10']]
-    results_df['chiller_water_temp_diff_results'] = chiller_water_temp_diff_results
-
-    return results_df
-def condensor_water_temp_diff(df):
-    condensor_water_temp_diff_results = []
-
-    for index, row in df.iterrows():
-        try:
-            if(abs(float(row['CDWST']) - float(row['CDWRT'])) < 5 and (row['CP2CH1M5'] or row['CP2CH2M10'])):
-                condensor_water_temp_diff_results.append(1)
-            else:
-                condensor_water_temp_diff_results.append(0)
-        except:
-            condensor_water_temp_diff_results.append(-1)
-            continue
-
-    results_df = df[['CDWST', 'CDWRT', 'CP2CH1M5', 'CP2.CH2.M10']]
-    results_df['condensor_water_temp_diff_results'] = condensor_water_temp_diff_results
-
-    return results_df
-
-def condensor_water_reset_temp(df):
-    condensor_water_return_temp_results = []
-
-    for index, row in df.iterrows():
-        try:
-            if(float(row['CDWRT']) > (float(row['CP2.CHOAT']) + 7)):
-                condensor_water_return_temp_results.append(1)
-            else:
-                condensor_water_return_temp_results.append(0)
-        except:
-            condensor_water_return_temp_results.append(-1)
-            continue
-
-    results_df = df[['CDWRT', 'CP2.CHOAT']]
-    results_df['condensor_water_return_temp_results'] = condensor_water_return_temp_results
-
-    return results_df
+def chiller_water_temp_diff(CCHWST, CCHWRT, CP2CH1M5, CP2CH2M10):
+    try:
+        if(abs(float(CCHWST)- float(CCHWRT)) < 5 and (CP2CH1M5 or CP2CH2M10)):
+            return True
+        return False
+    except:
+        return np.NaN
+def condensor_water_temp_diff(CDWST, CDWRT, CP2CH1M5, CP2CH2M10):
+    try:
+        if(abs(float(CDWST) - float(CDWRT)) < 5 and (CP2CH1M5 or CP2CH2M10)):
+            return True
+        return False
+    except:
+        return np.NaN
+def condensor_water_reset_temp(CDWRT, CP2CHOAT):
+    try:
+        if(float(CDWRT) > (float(CP2CHOAT) + 7)):
+            return True
+        return False
+    except:
+        return np.NaN
 
 def fault_rule_implementation():
     df = pd.read_csv('/home/ubuntu/PycharmProjects/rei_power/column_mapping.csv', header=None)
@@ -119,20 +78,23 @@ def create_csv(request):
 
         df = fault_rule_implementation()
 
-        is_free_cooling_operation_results_df = is_free_cooling_operation(df)
-        chiller_water_temp_diff_results_df = chiller_water_temp_diff(df)
-        condensor_water_temp_diff_results_df = chiller_water_temp_diff(df)
-        condensor_water_reset_temp_results_df = condensor_water_reset_temp(df)
+        df['is_free_cooling_operation_results'] = df.apply(
+            lambda row: is_free_cooling_operation(row['CP2.CHOAT'], row['CP2.CH1.M5'], row['CP2.CH2.M10']), axis=1)
+        df['chiller_water_temp_diff_results'] = df.apply(
+            lambda row: chiller_water_temp_diff(row['CCHWST'], row['CCHWRT'], row['CP2.CH1.M5'], row['CP2.CH2.M10']),
+            axis=1)
+        df['condensor_water_temp_diff_results'] = df.apply(
+            lambda row: condensor_water_temp_diff(row['CDWST'], row['CDWRT'], row['CP2.CH1.M5'], row['CP2.CH2.M10']),
+            axis=1)
+        df['condensor_water_reset_temp_results'] = df.apply(
+            lambda row: condensor_water_reset_temp(row['CDWRT'], row['CP2.CHOAT']), axis=1)
 
         # TODO: Dropdown to select which faults to choose
 
-        result = is_free_cooling_operation_results_df.to_html(index=False)
-        # result = chiller_water_temp_diff.to_html(index=False)
-        # result = condensor_water_temp_diff_results_df.to_html(index=False)
-        # result = condensor_water_reset_temp_results_df.to_html(index=False)
+        result = df.to_html(index=False)
 
-        print(df)
-        request.session['result'] = is_free_cooling_operation_results_df.to_json(orient="records")
+        # print(df)
+        request.session['result'] = df.to_json(orient="records")
         html_template = loader.get_template('home/dashboard.html')
         return HttpResponse(html_template.render({"html":result, "dataframe":df}, request))
                    
