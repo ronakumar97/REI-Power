@@ -115,11 +115,22 @@ Specific Page CSS goes HERE  -->
             </div>
         </div>
     </div>
-
+    <!-- <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Multiple Line Chart</div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="multipleLineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div> -->
 
 <form action="/create_csv/" method="GET" class="form-horizontal"> 
     {% csrf_token %}
-    <div class="form-group">                    
+    <div class="form-group" id ="downloadcsvdiv">                    
         <div class="col-md-3 col-sm-3 col-xs-12 col-md-offset-3" style="margin-bottom:10px;">
              <button class="btn btn-primary"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>Download</button>
         </div> 
@@ -152,8 +163,22 @@ Specific Page CSS goes HERE  -->
 {% endblock content %}
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
+<script>
+$(document).ready(function(){
 
+downloadbutton();
 
+}); 
+
+function downloadbutton() {
+   if($("#multi-filter-select")[0].outerText != '')
+        $("#downloadcsvdiv").css("display", "block")
+   else
+        $("#downloadcsvdiv").css("display", "none")
+  }
+</script>
 {% endblock javascripts %}	
+
+
 </body>
 
