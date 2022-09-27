@@ -92,7 +92,7 @@ def create_csv(request):
         # TODO: Dropdown to select which faults to choose
          # result = df.to_html(index=False)
         df['DateTime'] = df[['Date', 'Time']].apply(lambda x: ' '.join(x), axis=1)
-        
+    
         filter_col=['DateTime','is_free_cooling_operation_results','chiller_water_temp_diff_results','condensor_water_temp_diff_results','condensor_water_reset_temp_results']
         df = df[filter_col].T
         new_header = df.iloc[0] 
