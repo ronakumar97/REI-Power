@@ -19,6 +19,87 @@ def index(request):
     html_template = loader.get_template('home/dashboard.html')
     return HttpResponse(html_template.render(context, request))
 
+# For CP1 Cooling
+def low_delta_t_chiller(CHWS, CHWR, SQ1_CP1_DF_CH1_KW, SQ1_CP1_DF_CH2_KW, SQ1_CP1_DF_CH3_KW, SQ1_CP1_DF_CH4_KW):
+    try:
+        if(abs(float(CHWS)- float(CHWR)) < 5 and (float(SQ1_CP1_DF_CH1_KW) > 10 or float(SQ1_CP1_DF_CH2_KW) > 10 or float(SQ1_CP1_DF_CH3_KW) > 10 or float(SQ1_CP1_DF_CH4_KW) > 10)):
+            return True
+        return False
+    except:
+        return np.NaN
+
+def chiller_operating_during_unoccupied_hours_1(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH1_KW):
+    try:
+        if(float(SQ1_CP1_DF_OAT) > 60 and (float(SQ1_CP1_DF_CH1_KW) > 10)):
+            return True
+        return False
+    except:
+        return np.NaN
+
+def chiller_operating_during_unoccupied_hours_2(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH2_KW):
+    try:
+        if(float(SQ1_CP1_DF_OAT) > 60 and (float(SQ1_CP1_DF_CH2_KW) > 10)):
+            return True
+        return False
+    except:
+        return np.NaN
+
+def chiller_operating_during_unoccupied_hours_3(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH3_KW):
+    try:
+        if(float(SQ1_CP1_DF_OAT) > 60 and (float(SQ1_CP1_DF_CH3_KW) > 10)):
+            return True
+        return False
+    except:
+        return np.NaN
+
+def chiller_operating_during_unoccupied_hours_4(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH4_KW):
+    try:
+        if(float(SQ1_CP1_DF_OAT) > 60 and (float(SQ1_CP1_DF_CH4_KW) > 10)):
+            return True
+        return False
+    except:
+        return np.NaN
+
+def individual_chiller_efficiency_1(SQ1_CP1_DF_CH1_KWT, SQ1_CP1_DF_CH1_KW):
+    try:
+        if(float(SQ1_CP1_DF_CH1_KWT) > 0.6 and (float(SQ1_CP1_DF_CH1_KW) > 10)):
+            return True
+        return False
+    except:
+        return np.NaN
+
+def individual_chiller_efficiency_2(SQ1_CP1_DF_CH2_KWT, SQ1_CP1_DF_CH2_KW):
+    try:
+        if(float(SQ1_CP1_DF_CH2_KWT) > 0.6 and (float(SQ1_CP1_DF_CH2_KW) > 10)):
+            return True
+        return False
+    except:
+        return np.NaN
+
+def individual_chiller_efficiency_3(SQ1_CP1_DF_CH3_KWT, SQ1_CP1_DF_CH3_KW):
+    try:
+        if(float(SQ1_CP1_DF_CH3_KWT) > 0.6 and (float(SQ1_CP1_DF_CH3_KW) > 10)):
+            return True
+        return False
+    except:
+        return np.NaN
+
+def individual_chiller_efficiency_4(SQ1_CP1_DF_CH4_KWT, SQ1_CP1_DF_CH4_KW):
+    try:
+        if(float(SQ1_CP1_DF_CH4_KWT) > 0.6 and (float(SQ1_CP1_DF_CH4_KW) > 10)):
+            return True
+        return False
+    except:
+        return np.NaN
+
+def too_many_starts(df):
+    base_date = df['Date'].iloc[0]
+    print(base_date)
+
+    sub_df = df[(df['Date'] == str(base_date))]
+    return sub_df
+
+# For CP2 Cooling
 def is_free_cooling_operation(CP2CHOAT, CP2CH1M5, CP2CH2M10):
     try:
         if ((float(CP2CHOAT) < 60) and (CP2CH1M5 or CP2CH2M10)):
@@ -71,41 +152,97 @@ def fault_rule_implementation(data_file,mapping_file):
 def create_csv(request):
     
     if request.method == 'POST':
-
         # TODO: Make two buttons (one for uploading the column mapping and other for uploading the data in the CSV)
        
         data_file = request.FILES["csv_file"]
         mapping_file = request.FILES["Mapping_file"]
-            
-        df = fault_rule_implementation(data_file,mapping_file)
 
-        df['is_free_cooling_operation_results'] = df.apply(
-            lambda row: is_free_cooling_operation(row['CP2.CHOAT'], row['CP2.CH1.M5'], row['CP2.CH2.M10']), axis=1)
-        df['chiller_water_temp_diff_results'] = df.apply(
-            lambda row: chiller_water_temp_diff(row['CCHWST'], row['CCHWRT'], row['CP2.CH1.M5'], row['CP2.CH2.M10']),
-            axis=1)
-        df['condensor_water_temp_diff_results'] = df.apply(
-            lambda row: condensor_water_temp_diff(row['CDWST'], row['CDWRT'], row['CP2.CH1.M5'], row['CP2.CH2.M10']),
-            axis=1)
-        df['condensor_water_reset_temp_results'] = df.apply(
-            lambda row: condensor_water_reset_temp(row['CDWRT'], row['CP2.CHOAT']), axis=1)
+        df = fault_rule_implementation(data_file, mapping_file)
 
-        # TODO: Dropdown to select which faults to choose
-         # result = df.to_html(index=False)
-        df['DateTime'] = df[['Date', 'Time']].apply(lambda x: ' '.join(x), axis=1)
-    
-        filter_col=['DateTime','is_free_cooling_operation_results','chiller_water_temp_diff_results','condensor_water_temp_diff_results','condensor_water_reset_temp_results']
-        df = df[filter_col].T
-        new_header = df.iloc[0] 
-        df = df[1:]
-        df.columns = new_header 
+        if(request.POST.get('filetype') == 'CP1'):
+            df['low_delta_t_chiller'] = df.apply(
+                lambda row: low_delta_t_chiller(row['CHWS'], row['CHWR'], row['SQ1_CP1_DF_CH1_KW'], row['SQ1_CP1_DF_CH2_KW'], row['SQ1_CP1_DF_CH3_KW'], row['SQ1_CP1_DF_CH4_KW']), axis=1)
 
-        filter_col_name=['Free cooling operation results','Chiller water temp diff results','Condensor water temp diff results','Condensor water reset temp results']
-        df.insert(loc=0, column='Fault Rules', value=filter_col_name)
-       
-        request.session['result'] = df.to_json(orient="records")
-        html_template = loader.get_template('Dashboard/Index.html')
-        return HttpResponse(html_template.render({"dataframe":df}, request))
+            df['chiller_operating_during_unoccupied_hours_1'] = df.apply(
+                lambda row: chiller_operating_during_unoccupied_hours_1(row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH1_KW']),
+                axis=1)
+
+            df['chiller_operating_during_unoccupied_hours_2'] = df.apply(
+                lambda row: chiller_operating_during_unoccupied_hours_2(row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH2_KW']),
+                axis=1)
+
+            df['chiller_operating_during_unoccupied_hours_3'] = df.apply(
+                lambda row: chiller_operating_during_unoccupied_hours_3(row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH3_KW']),
+                axis=1)
+
+            df['chiller_operating_during_unoccupied_hours_4'] = df.apply(
+                lambda row: chiller_operating_during_unoccupied_hours_4(row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH4_KW']),
+                axis=1)
+
+            df['individual_chiller_efficiency_1'] = df.apply(
+                lambda row: individual_chiller_efficiency_1(row['SQ1_CP1_DF_CH1_KWT'], row['SQ1_CP1_DF_CH1_KW']),
+                axis=1)
+
+            df['individual_chiller_efficiency_2'] = df.apply(
+                lambda row: individual_chiller_efficiency_2(row['SQ1_CP1_DF_CH2_KWT'], row['SQ1_CP1_DF_CH2_KW']),
+                axis=1)
+
+            df['individual_chiller_efficiency_3'] = df.apply(
+                lambda row: individual_chiller_efficiency_3(row['SQ1_CP1_DF_CH3_KWT'], row['SQ1_CP1_DF_CH3_KW']),
+                axis=1)
+
+            df['individual_chiller_efficiency_4'] = df.apply(
+                lambda row: individual_chiller_efficiency_4(row['SQ1_CP1_DF_CH4_KWT'], row['SQ1_CP1_DF_CH4_KW']),
+                axis=1)
+
+            # TODO: Dropdown to select which faults to choose
+            # result = df.to_html(index=False)
+            df['DateTime'] = df[['Date', 'Time']].apply(lambda x: ' '.join(x), axis=1)
+
+            filter_col = ['DateTime', 'low_delta_t_chiller',
+                          'chiller_operating_during_unoccupied_hours_1', 'chiller_operating_during_unoccupied_hours_2', 'chiller_operating_during_unoccupied_hours_3', 'chiller_operating_during_unoccupied_hours_4',
+                          'individual_chiller_efficiency_1', 'individual_chiller_efficiency_2', 'individual_chiller_efficiency_3', 'individual_chiller_efficiency_4']
+            df = df[filter_col].T
+            new_header = df.iloc[0]
+            df = df[1:]
+            df.columns = new_header
+
+            filter_col_name = ['Free cooling operation results', 'Chiller water temp diff results',
+                               'Condensor water temp diff results', 'Condensor water reset temp results']
+            df.insert(loc=0, column='Fault Rules', value=filter_col_name)
+
+            request.session['result'] = df.to_json(orient="records")
+            html_template = loader.get_template('home/dashboard.html')
+            return HttpResponse(html_template.render({"dataframe": df}, request))
+
+        elif(request.POST.get('file_type') == 'CP2'):
+            df['is_free_cooling_operation_results'] = df.apply(
+                lambda row: is_free_cooling_operation(row['CP2.CHOAT'], row['CP2.CH1.M5'], row['CP2.CH2.M10']), axis=1)
+            df['chiller_water_temp_diff_results'] = df.apply(
+                lambda row: chiller_water_temp_diff(row['CCHWST'], row['CCHWRT'], row['CP2.CH1.M5'], row['CP2.CH2.M10']),
+                axis=1)
+            df['condensor_water_temp_diff_results'] = df.apply(
+                lambda row: condensor_water_temp_diff(row['CDWST'], row['CDWRT'], row['CP2.CH1.M5'], row['CP2.CH2.M10']),
+                axis=1)
+            df['condensor_water_reset_temp_results'] = df.apply(
+                lambda row: condensor_water_reset_temp(row['CDWRT'], row['CP2.CHOAT']), axis=1)
+
+            # TODO: Dropdown to select which faults to choose
+             # result = df.to_html(index=False)
+            df['DateTime'] = df[['Date', 'Time']].apply(lambda x: ' '.join(x), axis=1)
+
+            filter_col=['DateTime','is_free_cooling_operation_results','chiller_water_temp_diff_results','condensor_water_temp_diff_results','condensor_water_reset_temp_results']
+            df = df[filter_col].T
+            new_header = df.iloc[0]
+            df = df[1:]
+            df.columns = new_header
+
+            filter_col_name=['Free cooling operation results','Chiller water temp diff results','Condensor water temp diff results','Condensor water reset temp results']
+            df.insert(loc=0, column='Fault Rules', value=filter_col_name)
+
+            request.session['result'] = df.to_json(orient="records")
+            html_template = loader.get_template('home/dashboard.html')
+            return HttpResponse(html_template.render({"dataframe":df}, request))
                    
     else:
         df = pd.DataFrame()
