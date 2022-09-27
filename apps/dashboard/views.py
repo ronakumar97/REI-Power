@@ -130,14 +130,17 @@ def condensor_water_reset_temp(CDWRT, CP2CHOAT):
     except:
         return np.NaN
 
-def fault_rule_implementation(data_file,mapping_file):
+def fault_rule_implementation(data_file,mapping_file,filetype):
     df = pd.read_csv(mapping_file, header=None)
+    
     column_mappings = {}
     for index, row in df.iterrows():
         row[0] = row[0].split(':')[0]
         column_mappings[row[0]] = row[1]
-
-    df = pd.read_csv(data_file, sep="\t")
+    if(filetype == "CP1"):
+        df = pd.read_csv(data_file)
+    else:
+        df = pd.read_csv(data_file, sep="\t")
     df = df.iloc[:, :-1]
     df = df.rename(columns={'<>Date': 'Date'})
     df = df.rename(columns=column_mappings)
@@ -145,7 +148,7 @@ def fault_rule_implementation(data_file,mapping_file):
     df = df[:-1]
 
     df.replace({'OFF': 0, 'ON': 1}, inplace=True)
-
+    print(df.head())
     return df
 
 @csrf_exempt
@@ -157,15 +160,15 @@ def create_csv(request):
         data_file = request.FILES["csv_file"]
         mapping_file = request.FILES["Mapping_file"]
 
-        df = fault_rule_implementation(data_file, mapping_file)
+        df = fault_rule_implementation(data_file, mapping_file,request.POST.get('filetype'))
+        
 
         if(request.POST.get('filetype') == 'CP1'):
             df['low_delta_t_chiller'] = df.apply(
-                lambda row: low_delta_t_chiller(row['CHWS'], row['CHWR'], row['SQ1_CP1_DF_CH1_KW'], row['SQ1_CP1_DF_CH2_KW'], row['SQ1_CP1_DF_CH3_KW'], row['SQ1_CP1_DF_CH4_KW']), axis=1)
+                lambda row: low_delta_t_chiller(row['1CHWS'], row['1CHWR'], row['SQ1_CP1_DF_CH1_KW'], row['SQ1_CP1_DF_CH2_KW'], row['SQ1_CP1_DF_CH3_KW'], row['SQ1_CP1_DF_CH4_KW']), axis=1)
 
             df['chiller_operating_during_unoccupied_hours_1'] = df.apply(
-                lambda row: chiller_operating_during_unoccupied_hours_1(row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH1_KW']),
-                axis=1)
+                lambda row: chiller_operating_during_unoccupied_hours_1(row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH1_KW']),axis=1)
 
             df['chiller_operating_during_unoccupied_hours_2'] = df.apply(
                 lambda row: chiller_operating_during_unoccupied_hours_2(row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH2_KW']),
@@ -207,12 +210,13 @@ def create_csv(request):
             df = df[1:]
             df.columns = new_header
 
-            filter_col_name = ['Free cooling operation results', 'Chiller water temp diff results',
-                               'Condensor water temp diff results', 'Condensor water reset temp results']
+            filter_col_name = ['low_delta_t_chiller',
+                          'chiller_operating_during_unoccupied_hours_1', 'chiller_operating_during_unoccupied_hours_2', 'chiller_operating_during_unoccupied_hours_3', 'chiller_operating_during_unoccupied_hours_4',
+                          'individual_chiller_efficiency_1', 'individual_chiller_efficiency_2', 'individual_chiller_efficiency_3', 'individual_chiller_efficiency_4']
             df.insert(loc=0, column='Fault Rules', value=filter_col_name)
 
             request.session['result'] = df.to_json(orient="records")
-            html_template = loader.get_template('home/dashboard.html')
+            html_template = loader.get_template('Dashboard/Index.html')
             return HttpResponse(html_template.render({"dataframe": df}, request))
 
         elif(request.POST.get('filetype') == 'CP2'):
