@@ -28,6 +28,12 @@ def low_delta_t_chiller(CHWS, CHWR, SQ1_CP1_DF_CH1_KW, SQ1_CP1_DF_CH2_KW, SQ1_CP
     except:
         return np.NaN
 
+def chiller_operating_during_unoccupied_hours(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH1_KW, SQ1_CP1_DF_CH2_KW, SQ1_CP1_DF_CH3_KW, SQ1_CP1_DF_CH4_KW):
+    return chiller_operating_during_unoccupied_hours_1(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH1_KW) or \
+           chiller_operating_during_unoccupied_hours_2(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH2_KW) or \
+           chiller_operating_during_unoccupied_hours_3(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH3_KW) or \
+           chiller_operating_during_unoccupied_hours_4(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH4_KW)
+
 def chiller_operating_during_unoccupied_hours_1(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH1_KW):
     try:
         if(float(SQ1_CP1_DF_OAT) > 60 and (float(SQ1_CP1_DF_CH1_KW) > 10)):
@@ -60,6 +66,11 @@ def chiller_operating_during_unoccupied_hours_4(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH4_K
     except:
         return np.NaN
 
+def individual_chiller_efficiency(SQ1_CP1_DF_CH1_KWT, SQ1_CP1_DF_CH1_KW, SQ1_CP1_DF_CH2_KWT, SQ1_CP1_DF_CH2_KW, SQ1_CP1_DF_CH3_KWT, SQ1_CP1_DF_CH3_KW, SQ1_CP1_DF_CH4_KWT, SQ1_CP1_DF_CH4_KW):
+    return individual_chiller_efficiency_1(SQ1_CP1_DF_CH1_KWT, SQ1_CP1_DF_CH1_KW) or \
+           individual_chiller_efficiency_2(SQ1_CP1_DF_CH2_KWT, SQ1_CP1_DF_CH2_KW) or \
+           individual_chiller_efficiency_3(SQ1_CP1_DF_CH3_KWT, SQ1_CP1_DF_CH3_KW) or \
+           individual_chiller_efficiency_4(SQ1_CP1_DF_CH4_KWT, SQ1_CP1_DF_CH4_KW)
 def individual_chiller_efficiency_1(SQ1_CP1_DF_CH1_KWT, SQ1_CP1_DF_CH1_KW):
     try:
         if(float(SQ1_CP1_DF_CH1_KWT) > 0.6 and (float(SQ1_CP1_DF_CH1_KW) > 10)):
@@ -167,35 +178,11 @@ def create_csv(request):
             df['low_delta_t_chiller'] = df.apply(
                 lambda row: low_delta_t_chiller(row['1CHWS'], row['1CHWR'], row['SQ1_CP1_DF_CH1_KW'], row['SQ1_CP1_DF_CH2_KW'], row['SQ1_CP1_DF_CH3_KW'], row['SQ1_CP1_DF_CH4_KW']), axis=1)
 
-            df['chiller_operating_during_unoccupied_hours_1'] = df.apply(
-                lambda row: chiller_operating_during_unoccupied_hours_1(row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH1_KW']),axis=1)
+            df['chiller_operating_during_unoccupied_hours'] = df.apply(
+                lambda row: chiller_operating_during_unoccupied_hours(row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH1_KW'], row['SQ1_CP1_DF_CH2_KW'], row['SQ1_CP1_DF_CH3_KW'], row['SQ1_CP1_DF_CH4_KW']), axis=1)
 
-            df['chiller_operating_during_unoccupied_hours_2'] = df.apply(
-                lambda row: chiller_operating_during_unoccupied_hours_2(row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH2_KW']),
-                axis=1)
-
-            df['chiller_operating_during_unoccupied_hours_3'] = df.apply(
-                lambda row: chiller_operating_during_unoccupied_hours_3(row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH3_KW']),
-                axis=1)
-
-            df['chiller_operating_during_unoccupied_hours_4'] = df.apply(
-                lambda row: chiller_operating_during_unoccupied_hours_4(row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH4_KW']),
-                axis=1)
-
-            df['individual_chiller_efficiency_1'] = df.apply(
-                lambda row: individual_chiller_efficiency_1(row['SQ1_CP1_DF_CH1_KWT'], row['SQ1_CP1_DF_CH1_KW']),
-                axis=1)
-
-            df['individual_chiller_efficiency_2'] = df.apply(
-                lambda row: individual_chiller_efficiency_2(row['SQ1_CP1_DF_CH2_KWT'], row['SQ1_CP1_DF_CH2_KW']),
-                axis=1)
-
-            df['individual_chiller_efficiency_3'] = df.apply(
-                lambda row: individual_chiller_efficiency_3(row['SQ1_CP1_DF_CH3_KWT'], row['SQ1_CP1_DF_CH3_KW']),
-                axis=1)
-
-            df['individual_chiller_efficiency_4'] = df.apply(
-                lambda row: individual_chiller_efficiency_4(row['SQ1_CP1_DF_CH4_KWT'], row['SQ1_CP1_DF_CH4_KW']),
+            df['individual_chiller_efficiency'] = df.apply(
+                lambda row: individual_chiller_efficiency(row['SQ1_CP1_DF_CH1_KWT'], row['SQ1_CP1_DF_CH1_KW'], row['SQ1_CP1_DF_CH2_KWT'], row['SQ1_CP1_DF_CH2_KW'], row['SQ1_CP1_DF_CH3_KWT'], row['SQ1_CP1_DF_CH3_KW'], row['SQ1_CP1_DF_CH4_KWT'], row['SQ1_CP1_DF_CH4_KW']),
                 axis=1)
 
             # TODO: Dropdown to select which faults to choose
@@ -203,8 +190,8 @@ def create_csv(request):
             df['DateTime'] = df[['Date', 'Time']].apply(lambda x: ' '.join(x), axis=1)
 
             filter_col = ['DateTime', 'low_delta_t_chiller',
-                          'chiller_operating_during_unoccupied_hours_1', 'chiller_operating_during_unoccupied_hours_2', 'chiller_operating_during_unoccupied_hours_3', 'chiller_operating_during_unoccupied_hours_4',
-                          'individual_chiller_efficiency_1', 'individual_chiller_efficiency_2', 'individual_chiller_efficiency_3', 'individual_chiller_efficiency_4']
+                          'chiller_operating_during_unoccupied_hours', 'individual_chiller_efficiency']
+
             df = df[filter_col].T
             new_header = df.iloc[0]
             df = df[1:]
