@@ -210,9 +210,9 @@ def create_csv(request):
             df = df[1:]
             df.columns = new_header
 
-            filter_col_name = ['low_delta_t_chiller',
-                          'chiller_operating_during_unoccupied_hours_1', 'chiller_operating_during_unoccupied_hours_2', 'chiller_operating_during_unoccupied_hours_3', 'chiller_operating_during_unoccupied_hours_4',
-                          'individual_chiller_efficiency_1', 'individual_chiller_efficiency_2', 'individual_chiller_efficiency_3', 'individual_chiller_efficiency_4']
+            filter_col_name = ['Low Delta T Chiller',
+                          'Chiller Operating During Unoccupied Hours_1', 'Chiller Operating During Unoccupied Hours_2', 'Chiller Operating During Unoccupied Hours_3', 'Chiller Operating During Unoccupied Hours_4',
+                          'Individual Chiller Efficiency_1', 'Individual Chiller Efficiency_2', 'Individual Chiller Efficiency_3', 'Individual Chiller Efficiency_4']
             df.insert(loc=0, column='Fault Rules', value=filter_col_name)
 
             request.session['result'] = df.to_json(orient="records")
