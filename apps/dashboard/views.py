@@ -99,13 +99,6 @@ def too_many_starts(df):
     sub_df = df[(df['Date'] == str(base_date))]
     return sub_df
 
-
-
-
-
-
-
-
 # For CP2 Cooling
 def is_free_cooling_operation(CP2CHOAT, CP2CH1M5, CP2CH2M10):
     try:
@@ -205,8 +198,9 @@ def create_csv(request):
             # result = df.to_html(index=False)
             df['DateTime'] = df[['Date', 'Time']].apply(lambda x: ' '.join(x), axis=1)
 
-            filter_col = ['DateTime', 'is_free_cooling_operation_results', 'chiller_water_temp_diff_results',
-                          'condensor_water_temp_diff_results', 'condensor_water_reset_temp_results']
+            filter_col = ['DateTime', 'low_delta_t_chiller',
+                          'chiller_operating_during_unoccupied_hours_1', 'chiller_operating_during_unoccupied_hours_2', 'chiller_operating_during_unoccupied_hours_3', 'chiller_operating_during_unoccupied_hours_4',
+                          'individual_chiller_efficiency_1', 'individual_chiller_efficiency_2', 'individual_chiller_efficiency_3', 'individual_chiller_efficiency_4']
             df = df[filter_col].T
             new_header = df.iloc[0]
             df = df[1:]
