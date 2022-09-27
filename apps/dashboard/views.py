@@ -241,15 +241,17 @@ def create_csv(request):
             df.insert(loc=0, column='Fault Rules', value=filter_col_name)
 
             request.session['result'] = df.to_json(orient="records")
-            html_template = loader.get_template('home/dashboard.html')
+            html_template = loader.get_template('Dashboard/Index.html')
             return HttpResponse(html_template.render({"dataframe":df}, request))
                    
-    else:
-        df = pd.DataFrame()
-        if request.session.get('result'):
-            result =  request.session.get('result')
-            df = pd.DataFrame(json.loads(result))
-            # print(df)
+
+@csrf_exempt
+def download(request):
+    df = pd.DataFrame()
+    if request.session.get('result'):
+        result =  request.session.get('result')
+        df = pd.DataFrame(json.loads(result))
+        # print(df)
         response = HttpResponse(df.to_csv(index=False),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename="sensor_data_results.csv"'
         return response
