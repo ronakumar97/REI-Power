@@ -1,0 +1,78 @@
+
+{% extends "layouts/base.html" %}
+
+{% block title %} Dashboard {% endblock %}  
+
+Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<!-- <link rel="stylesheet" href="/static/assets/css/dashboard.css"> -->
+
+{% endblock stylesheets %}
+
+{% block content %}
+{% load static %} 
+
+</br></br></br></br>
+<div class="col-md-12">
+    
+    <div class="content">
+
+        <div class="page-inner">
+            
+            <div class="row">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="multi-filter-select" class="display table table-striped table-hover" >
+                                <thead>
+                                <tr>
+                                    {% for col in dataframe.columns %}
+                                    <th>
+                                        {{col}}      </th>
+                                    {% endfor %}
+                                </tr>
+                                </thead>
+                                <!-- <tfoot>
+                                    <tr>
+                                    {% for col in dataframe.columns %}
+                                    <th>
+                                        {{col}}      </th>
+                                    {% endfor %}
+                                </tr>
+                                </tfoot> -->
+                                <tbody>
+                                    {% for index, row in dataframe.iterrows %}
+                                    <tr>
+                                    {% for cell in row %}
+                                    {% if cell == True %}
+                                        <td bgcolor="red" style="color:red">
+                                            {{cell}}
+                                        </td>
+                                    {% elif cell == False %}
+                                        <td bgcolor="green" style="color:green">
+                                            {{cell}}
+                                        </td>
+                                    {% else %}
+                                        <td>
+                                            {{cell}}
+                                            </td>
+                                    {% endif %}
+                                    {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </br>
+                    <a href="/download/" class="btn btn-primary">Download</a>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock content %}

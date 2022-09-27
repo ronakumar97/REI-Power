@@ -73,9 +73,10 @@ def create_csv(request):
     if request.method == 'POST':
 
         # TODO: Make two buttons (one for uploading the column mapping and other for uploading the data in the CSV)
+       
         data_file = request.FILES["csv_file"]
         mapping_file = request.FILES["Mapping_file"]
-              
+            
         df = fault_rule_implementation(data_file,mapping_file)
 
         df['is_free_cooling_operation_results'] = df.apply(
@@ -103,7 +104,7 @@ def create_csv(request):
         df.insert(loc=0, column='Fault Rules', value=filter_col_name)
        
         request.session['result'] = df.to_json(orient="records")
-        html_template = loader.get_template('home/dashboard.html')
+        html_template = loader.get_template('Dashboard/Index.html')
         return HttpResponse(html_template.render({"dataframe":df}, request))
                    
     else:
@@ -115,4 +116,6 @@ def create_csv(request):
         response = HttpResponse(df.to_csv(index=False),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename="sensor_data_results.csv"'
         return response
+
+
           
