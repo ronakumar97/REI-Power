@@ -22,6 +22,20 @@ Specific Page CSS goes HERE  -->
             <div class="row">
                 <div class="card">
                     <div class="card-body">
+                        <form action="/filterdata/" method="POST" enctype="multipart/form-data" class="form-horizontal"> 
+                            {% csrf_token %}
+                        <label for="starttime">Start Date Time :</label>
+
+                            <input type="datetime-local" id="starttime"
+                                name="starttime" 
+                                >
+                                <label for="endtime">End Date Time :</label>
+
+                                <input type="datetime-local" id="endtime"
+                                    name="endtime" 
+                                    >
+                                    <button class="btn btn-primary"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>Submit</button>
+                        </form>
                         <div class="table-responsive">
                             <table id="multi-filter-select" class="display table table-striped table-hover" >
                                 <thead>

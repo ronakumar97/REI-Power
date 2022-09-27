@@ -1,4 +1,5 @@
 
+import re
 import pandas as pd
 from django import template
 from django.contrib.auth.decorators import login_required
@@ -159,7 +160,6 @@ def fault_rule_implementation(data_file,mapping_file,filetype):
     df = df[:-1]
 
     df.replace({'OFF': 0, 'ON': 1}, inplace=True)
-    print(df.head())
     return df
 
 @csrf_exempt
@@ -243,10 +243,26 @@ def download(request):
     if request.session.get('result'):
         result =  request.session.get('result')
         df = pd.DataFrame(json.loads(result))
-        # print(df)
+        
         response = HttpResponse(df.to_csv(index=False),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename="sensor_data_results.csv"'
         return response
+
+@csrf_exempt
+def filterdata(request):
+    starttime = request.POST.get('starttime')
+    endtime = request.POST.get('endtime')
+    print(starttime)
+    print(endtime)
+    if request.session.get('result'):
+        result =  request.session.get('result')
+        df = pd.DataFrame(json.loads(result))
+        print(df.head(2))
+    
+    return "successs"
+    
+    
+
 
 
           

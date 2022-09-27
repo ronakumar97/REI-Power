@@ -9,4 +9,6 @@ urlpatterns = [
     path('', views.index, name='dashboard'),
     path("create_csv/", views.create_csv, name='csv'),
     path("download/", views.download, name= 'download'),
+    path("filterdata/", views.filterdata, name= 'filterdata'),
+    
 ]
