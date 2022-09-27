@@ -1,0 +1,52 @@
+﻿Point_1:,SQ1_CP1_DF_OAT,,15 minutes
+Point_2:,1CHWS,,15 minutes
+Point_3:,1CHWR,,15 minutes
+Point_4:,SQ1_CP1_DF_CH1_TONS,,15 minutes
+Point_5:,SQ1_CP1_DF_CH2_TONS,,15 minutes
+Point_6:,SQ1_CP1_DF_CH3_TONS,,15 minutes
+Point_7:,SQ1_CP1_DF_CH4_TONS,,15 minutes
+Point_8:,SQ1_CP1_DF_CH1_KW,,15 minutes
+Point_9:,SQ1_CP1_DF_CH1_KWT,,15 minutes
+Point_10:,SQ1_CP1_DF_CH2_KW,,15 minutes
+Point_11:,SQ1_CP1_DF_CH2_KWT,,15 minutes
+Point_12:,SQ1_CP1_DF_CH3_KW,,15 minutes
+Point_13:,SQ1_CP1_DF_CH3_KWT,,15 minutes
+Point_14:,SQ1_CP1_DF_CH4_KW,,15 minutes
+Point_15:,SQ1_CP1_DF_CH4_KWT,,15 minutes
+Point_16:,SQ1.PCHW1.PMP.VFD:CMD REF,,15 minutes
+Point_17:,SQ1.PCHW2.PMP.VFD:CMD REF,,15 minutes
+Point_18:,SQ1.PCHW3.PMP.VFD:CMD REF,,15 minutes
+Point_19:,SQ1.PCHW4.PMP4A.VFD:CMD REF,,15 minutes
+Point_20:,SQ1.PCHW4.PMP4B.VFD:CMD REF,,15 minutes
+Point_21:,SQ1_CP1_DF_CHWP1_KW,,15 minutes
+Point_22:,SQ1_CP1_DF_CHWP2_KW,,15 minutes
+Point_23:,SQ1_CP1_DF_CHWP3_KW,,15 minutes
+Point_24:,SQ1_CP1_DF_CHWP4_KW,,15 minutes
+Point_25:,SQ1_CP1_DF_CHWP4A_KW,,15 minutes
+Point_26:,SQ1_CP1_DF_CHWP4B_KW,,15 minutes
+Point_27:,SQ1_CP1_DF_CT1_VFD_SPD,,15 minutes
+Point_28:,SQ1_CP1_DF_CT2_VFD_SPD,,15 minutes
+Point_29:,SQ1_CP1_DF_CT3_VFD_SPD,,15 minutes
+Point_30:,SQ1_CP1_DF_CT1_KW,,15 minutes
+Point_31:,SQ1_CP1_DF_CT2_KW,,15 minutes
+Point_32:,SQ1_CP1_DF_CT3_KW,,15 minutes
+Point_33:,SQ1.PCW1.PMP.VFD:CMD REF,,15 minutes
+Point_34:,SQ1.PCW2.PMP.VFD:CMD REF,,15 minutes
+Point_35:,SQ1.PCW3.PMP3.VFD:CMD REF,,15 minutes
+Point_36:,SQ1.PCW4.PMP4A.VFD:CMD REF,,15 minutes
+Point_37:,SQ1.PCW4.PMP4B.VFD:CMD REF,,15 minutes
+Point_38:,SQ1.SCHW1.PMP.VFD:CMD REF,,15 minutes
+Point_39:,SQ1.SCHW2.PMP.VFD:CMD REF,,15 minutes
+Point_40:,SQ1_CP1_DF_SCHWP1_KW,,15 minutes
+Point_41:,SQ1_CP1_DF_SCHWP2_KW,,15 minutes
+Point_42:,SQ1_CP1_DF_SCHWP_KW,,15 minutes
+Point_43:,1CDWR,,15 minutes
+Point_44:,1CDWS,,15 minutes
+Point_45:,SQ1_CP1_DF_CH1_CHW_FLOW,,15 minutes
+Point_46:,SQ1_CP1_DF_CH2_CHW_FLOW,,15 minutes
+Point_47:,SQ1_CP1_DF_CH3_CHW_FLOW,,15 minutes
+Point_48:,SQ1_CP1_DF_CH4_CHW_FLOW,,15 minutes
+Point_49:,SQ1_CP1_DF_CH1_CW_FLOW,,15 minutes
+Point_50:,SQ1_CP1_DF_CH2_CW_FLOW,,15 minutes
+Point_51:,SQ1_CP1_DF_CH3_CW_FLOW,,15 minutes
+Point_52:,SQ1_CP1_DF_CH4_CW_FLOW,,15 minutes
