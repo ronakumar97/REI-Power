@@ -215,7 +215,7 @@ def create_csv(request):
             html_template = loader.get_template('home/dashboard.html')
             return HttpResponse(html_template.render({"dataframe": df}, request))
 
-        elif(request.POST.get('file_type') == 'CP2'):
+        elif(request.POST.get('filetype') == 'CP2'):
             df['is_free_cooling_operation_results'] = df.apply(
                 lambda row: is_free_cooling_operation(row['CP2.CHOAT'], row['CP2.CH1.M5'], row['CP2.CH2.M10']), axis=1)
             df['chiller_water_temp_diff_results'] = df.apply(
