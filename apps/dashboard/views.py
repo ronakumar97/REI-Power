@@ -1,4 +1,6 @@
 
+from contextlib import redirect_stderr
+from http.client import HTTPResponse
 import re
 import pandas as pd
 from django import template
@@ -12,12 +14,16 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 import csv
 import numpy as np
+import datetime
+from plotly import express as px
+from django.shortcuts import redirect
+from json import dumps
 
 
 def index(request):
     context = {}
-    context['segment'] = 'dashboard.html'
-    html_template = loader.get_template('home/dashboard.html')
+    context['segment'] = 'home.html'
+    html_template = loader.get_template('dashboard/home.html')
     return HttpResponse(html_template.render(context, request))
 
 # For CP1 Cooling
@@ -160,6 +166,7 @@ def fault_rule_implementation(data_file,mapping_file,filetype):
     df = df[:-1]
 
     df.replace({'OFF': 0, 'ON': 1}, inplace=True)
+    print(df.head())
     return df
 
 @csrf_exempt
@@ -170,9 +177,11 @@ def create_csv(request):
        
         data_file = request.FILES["csv_file"]
         mapping_file = request.FILES["Mapping_file"]
+        
 
         df = fault_rule_implementation(data_file, mapping_file,request.POST.get('filetype'))
         
+        request.session['df'] = df.to_json(orient="records")
 
         if(request.POST.get('filetype') == 'CP1'):
             df['low_delta_t_chiller'] = df.apply(
@@ -208,6 +217,7 @@ def create_csv(request):
             return HttpResponse(html_template.render({"dataframe": df}, request))
 
         elif(request.POST.get('filetype') == 'CP2'):
+           
             df['is_free_cooling_operation_results'] = df.apply(
                 lambda row: is_free_cooling_operation(row['CP2.CHOAT'], row['CP2.CH1.M5'], row['CP2.CH2.M10']), axis=1)
             df['chiller_water_temp_diff_results'] = df.apply(
@@ -231,7 +241,6 @@ def create_csv(request):
 
             filter_col_name=['Free cooling operation results','Chiller water temp diff results','Condensor water temp diff results','Condensor water reset temp results']
             df.insert(loc=0, column='Fault Rules', value=filter_col_name)
-
             request.session['result'] = df.to_json(orient="records")
             html_template = loader.get_template('Dashboard/Index.html')
             return HttpResponse(html_template.render({"dataframe":df}, request))
@@ -250,16 +259,76 @@ def download(request):
 
 @csrf_exempt
 def filterdata(request):
-    starttime = request.POST.get('starttime')
-    endtime = request.POST.get('endtime')
-    print(starttime)
+    starttime = pd.to_datetime(request.POST.get('starttime'))
+    endtime = pd.to_datetime(request.POST.get('endtime'))
+    print(pd.to_datetime(starttime))
+    
+   
     print(endtime)
     if request.session.get('result'):
         result =  request.session.get('result')
         df = pd.DataFrame(json.loads(result))
-        print(df.head(2))
+        df = df.T
+        new_header = df.iloc[0]
+        df = df[1:]
+        df.columns = new_header
+        df['datetime'] = df.index
+        df['datetime']= pd.to_datetime(df["datetime"])
+        df = df[(df['datetime'] > starttime) &  (df['datetime'] < endtime)]
+
+        print(df)
     
     return "successs"
+
+@csrf_exempt
+def charts(request):
+    df = pd.DataFrame()
+    
+    if request.session.get('df'):
+            result =  request.session.get('df')
+            df = pd.DataFrame(json.loads(result))
+            headers = list(df.columns)
+            headers.remove('Date')
+            headers.remove('Time')
+            
+            
+            
+    if request.method == "POST":
+        # data_file = request.FILES["csv_file"]
+        # mapping_file = request.FILES["Mapping_file"]
+        # print("refresh")
+        # df = fault_rule_implementation(data_file, mapping_file,request.POST.get('filetype'))
+        df['DateTime'] = df[['Date', 'Time']].apply(lambda x: ' '.join(x), axis=1)
+        
+        xaxis = 'DateTime'
+        yaxis = request.POST.getlist('fields')
+        if yaxis == '':
+            yaxis = headers[0]
+        #df = px.data.gapminder().query("period in )
+        type = request.POST.get("type")
+        if type == 'bar':
+            print(xaxis)
+            fig = px.bar(df, x=xaxis, y=yaxis,title="")
+        elif type == 'scatter':
+            fig = px.scatter(df, x=xaxis, y=yaxis,labels={"variable": "Components"},title='')
+        else:
+            fig = px.line(df, x=xaxis, y=yaxis, labels={"variable": "Components"}, title='')
+
+        graph = fig.to_html(full_html=False, default_height="450px", default_width="100%")
+
+        dataDictionary = {
+        'yaxis': yaxis,
+        'type': type
+        }
+
+        dataJSON = dumps(dataDictionary)
+        
+        html_template = loader.get_template('Dashboard/charts.html')
+        return HttpResponse(html_template.render({"headers":headers, "graph":graph, "data":dataJSON}, request))
+    else:
+        print('getcall')
+        html_template = loader.get_template('Dashboard/charts.html')
+        return HttpResponse(html_template.render({"headers":headers}, request)) 
     
     
 

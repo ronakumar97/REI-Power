@@ -22,24 +22,29 @@ Specific Page CSS goes HERE  -->
             <div class="row">
                 <div class="card">
                     <div class="card-body">
+                        <div class="card">
                         <form action="/filterdata/" method="POST" enctype="multipart/form-data" class="form-horizontal"> 
                             {% csrf_token %}
-                        <label for="starttime">Start Date Time :</label>
+                            <label for="starttime" style="margin-left: 10px;">Start Date Time :</label>
 
                             <input type="datetime-local" id="starttime"
                                 name="starttime" 
-                                >
-                                <label for="endtime">End Date Time :</label>
+                                > 
+                                <label for="endtime" style="margin-left: 10px;">   End Date Time :</label>
 
                                 <input type="datetime-local" id="endtime"
-                                    name="endtime" 
-                                    >
-                                    <button class="btn btn-primary"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>Submit</button>
+                                    name="endtime">
+                                   
+                                    <button class="btn btn-primary btn-sm" style="margin-left: 20px;">Submit</button>
+                                    <a href="/charts/" style="float:right; margin-right: 10px;">View charts</a>
                         </form>
+                    </br>
+                    </div>
                         <div class="table-responsive">
                             <table id="multi-filter-select" class="display table table-striped table-hover" >
                                 <thead>
-                                <tr>
+                                <tr style="border: 1px solid black;
+                                border-collapse: collapse;">
                                     {% for col in dataframe.columns %}
                                     <th>
                                         {{col}}      </th>
@@ -56,7 +61,8 @@ Specific Page CSS goes HERE  -->
                                 </tfoot> -->
                                 <tbody>
                                     {% for index, row in dataframe.iterrows %}
-                                    <tr>
+                                    <tr style="border: 1px solid black;
+                                    border-collapse: collapse;">
                                     {% for cell in row %}
                                     {% if cell == True %}
                                         <td bgcolor="red" style="color:red">

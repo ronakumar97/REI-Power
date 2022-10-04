@@ -1,0 +1,119 @@
+
+{% extends "layouts/base.html" %}
+
+{% block title %} Dashboard {% endblock %}  
+
+Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<!-- <link rel="stylesheet" href="/static/assets/css/dashboard.css"> -->
+
+{% endblock stylesheets %}
+
+{% block content %}
+{% load static %} 
+
+</br></br>
+<body>
+<form action="/charts/" method="POST" enctype="multipart/form-data" class="form-horizontal"> 
+{% csrf_token %}
+</br>
+</br>
+<div class="content">
+
+    <div class="page-inner">
+       
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                   
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 col-lg-4">
+                                <div class="form-group">
+                                    
+                                    <label for="fields">Select Fields:</label>
+                                    <select name="fields" id="fields" class="form-control input-border-bottom" multiple>
+                                    {% for x in headers %}
+                                    
+                                    <option value="{{x}}">{{x}}</option>
+                                        
+                                        
+                                    {% endfor %}
+                                </select><br>
+                                <label for="type">Chart Type:</label>
+                                <select name="type" id="type" class="form-control input-border-bottom">
+                                    <option value="line">Line</option>
+                                    <option value="bar">Bar</option>
+                                    <option value="scatter">Scatter</option>
+                                    
+                                </select>
+                                </div>
+
+                                <div class="form-group">                    
+                                    <div class="col-xs-12 col-md-offset-3" style="margin-bottom:10px;">
+                                         <button class="btn btn-primary"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>View Chart </button>
+                                    </div> 
+                                </div>
+                            </div>    
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+
+<div id = "test"></div>
+{% if graph %}
+
+
+    <div class="page-inner">
+       
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                   
+                    <div class="card-body">
+                       
+                        {{ graph|safe }}
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endif %}
+
+{% endblock content %}
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+$(document).ready(function(){
+
+autoselect();
+
+}); 
+
+function autoselect() {
+    var data = JSON.parse("{{data|escapejs}}");
+    for(var x in data){
+        if(x == "yaxis"){
+            $("#fields").val(data[x])
+        }
+        if(x == "type"){
+            $("#type").val(data[x])
+        }
+
+
+    }
+  
+  }
+</script>
+{% endblock javascripts %}	
+
+
+</body>
+

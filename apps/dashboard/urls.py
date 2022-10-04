@@ -5,10 +5,11 @@ from apps.dashboard import views
 
 urlpatterns = [ 
     # The home page
-    path('dashboard/', views.index, name='dashboard'),
-    path('', views.index, name='dashboard'),
+    path('home/', views.index, name='home'),
+    path('', views.index, name='home'),
     path("create_csv/", views.create_csv, name='csv'),
     path("download/", views.download, name= 'download'),
     path("filterdata/", views.filterdata, name= 'filterdata'),
+    path("charts/", views.charts, name= 'charts'),
     
 ]

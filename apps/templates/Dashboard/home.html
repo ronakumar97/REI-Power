@@ -1,0 +1,87 @@
+
+{% extends "layouts/base.html" %}
+
+{% block title %} Dashboard {% endblock %}  
+
+Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<!-- <link rel="stylesheet" href="/static/assets/css/dashboard.css"> -->
+
+{% endblock stylesheets %}
+
+{% block content %}
+{% load static %} 
+
+</br></br>
+<body>
+<form action="/create_csv/" method="POST" enctype="multipart/form-data" class="form-horizontal"> 
+{% csrf_token %}
+</br>
+</br>
+<div class="content">
+
+    <div class="page-inner">
+       
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                   
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 col-lg-4">
+                                <div class="form-group">
+                                    Data File:
+                                    <!-- <label for="exampleFormControlFile1" class="col-md-3 col-sm-3 col-xs-12 control-label">Input file</label> -->
+                                    <input type="file" class="form-control-file" name="csv_file" id="csv_file">
+                                </div>
+
+                                <div class="form-group">
+                                   Mapping File: 
+                                    <input type="file" class="form-control-file" name="Mapping_file" id="Mapping_file">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="filetype">File Type:</label>
+                                    <select class="form-control" name="filetype" id="filetype">
+                                        <option>CP1</option>
+                                        <option>CP2</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">                    
+                                    <div class="col-xs-12 col-md-offset-3" style="margin-bottom:10px;">
+                                         <button class="btn btn-primary"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>Upload </button>
+                                    </div> 
+                                </div>
+                            </div>    
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+
+{% endblock content %}
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<!-- <script>
+$(document).ready(function(){
+
+downloadbutton();
+
+}); 
+
+function downloadbutton() {
+   if($("#multi-filter-select")[0].outerText != '')
+        $("#downloadcsvdiv").css("display", "block")
+   else
+        $("#downloadcsvdiv").css("display", "none")
+  }
+</script> -->
+{% endblock javascripts %}	
+
+
+</body>
+
