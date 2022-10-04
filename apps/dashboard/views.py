@@ -19,6 +19,11 @@ from plotly import express as px
 from django.shortcuts import redirect
 from json import dumps
 
+UNOCCUPIED_HOURS_LIST = [23, 24, 0, 1, 2, 3, 4, 5]
+DATES_SET_1 = {}
+DATES_SET_2 = {}
+DATES_SET_3 = {}
+DATES_SET_4 = {}
 
 def index(request):
     context = {}
@@ -35,49 +40,38 @@ def low_delta_t_chiller(CHWS, CHWR, SQ1_CP1_DF_CH1_KW, SQ1_CP1_DF_CH2_KW, SQ1_CP
     except:
         return np.NaN
 
-def chiller_operating_during_unoccupied_hours(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH1_KW, SQ1_CP1_DF_CH2_KW, SQ1_CP1_DF_CH3_KW, SQ1_CP1_DF_CH4_KW):
-    return chiller_operating_during_unoccupied_hours_1(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH1_KW) or \
-           chiller_operating_during_unoccupied_hours_2(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH2_KW) or \
-           chiller_operating_during_unoccupied_hours_3(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH3_KW) or \
-           chiller_operating_during_unoccupied_hours_4(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH4_KW)
-
-def chiller_operating_during_unoccupied_hours_1(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH1_KW):
+def chiller_operating_during_unoccupied_hours_1(time, SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH1_KW):
     try:
-        if(float(SQ1_CP1_DF_OAT) > 60 and (float(SQ1_CP1_DF_CH1_KW) > 10)):
+        if(int(time.split("\\:")[0]) in UNOCCUPIED_HOURS_LIST and float(SQ1_CP1_DF_OAT) > 60 and (float(SQ1_CP1_DF_CH1_KW) > 10)):
             return True
         return False
     except:
         return np.NaN
 
-def chiller_operating_during_unoccupied_hours_2(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH2_KW):
+def chiller_operating_during_unoccupied_hours_2(time, SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH2_KW):
     try:
-        if(float(SQ1_CP1_DF_OAT) > 60 and (float(SQ1_CP1_DF_CH2_KW) > 10)):
+        if(int(time.split("\\:")[0]) in UNOCCUPIED_HOURS_LIST and float(SQ1_CP1_DF_OAT) > 60 and (float(SQ1_CP1_DF_CH2_KW) > 10)):
             return True
         return False
     except:
         return np.NaN
 
-def chiller_operating_during_unoccupied_hours_3(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH3_KW):
+def chiller_operating_during_unoccupied_hours_3(time, SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH3_KW):
     try:
-        if(float(SQ1_CP1_DF_OAT) > 60 and (float(SQ1_CP1_DF_CH3_KW) > 10)):
+        if(int(time.split("\\:")[0]) in UNOCCUPIED_HOURS_LIST and float(SQ1_CP1_DF_OAT) > 60 and (float(SQ1_CP1_DF_CH3_KW) > 10)):
             return True
         return False
     except:
         return np.NaN
 
-def chiller_operating_during_unoccupied_hours_4(SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH4_KW):
+def chiller_operating_during_unoccupied_hours_4(time, SQ1_CP1_DF_OAT, SQ1_CP1_DF_CH4_KW):
     try:
-        if(float(SQ1_CP1_DF_OAT) > 60 and (float(SQ1_CP1_DF_CH4_KW) > 10)):
+        if(int(time.split("\\:")[0]) in UNOCCUPIED_HOURS_LIST and float(SQ1_CP1_DF_OAT) > 60 and (float(SQ1_CP1_DF_CH4_KW) > 10)):
             return True
         return False
     except:
         return np.NaN
 
-def individual_chiller_efficiency(SQ1_CP1_DF_CH1_KWT, SQ1_CP1_DF_CH1_KW, SQ1_CP1_DF_CH2_KWT, SQ1_CP1_DF_CH2_KW, SQ1_CP1_DF_CH3_KWT, SQ1_CP1_DF_CH3_KW, SQ1_CP1_DF_CH4_KWT, SQ1_CP1_DF_CH4_KW):
-    return individual_chiller_efficiency_1(SQ1_CP1_DF_CH1_KWT, SQ1_CP1_DF_CH1_KW) or \
-           individual_chiller_efficiency_2(SQ1_CP1_DF_CH2_KWT, SQ1_CP1_DF_CH2_KW) or \
-           individual_chiller_efficiency_3(SQ1_CP1_DF_CH3_KWT, SQ1_CP1_DF_CH3_KW) or \
-           individual_chiller_efficiency_4(SQ1_CP1_DF_CH4_KWT, SQ1_CP1_DF_CH4_KW)
 def individual_chiller_efficiency_1(SQ1_CP1_DF_CH1_KWT, SQ1_CP1_DF_CH1_KW):
     try:
         if(float(SQ1_CP1_DF_CH1_KWT) > 0.6 and (float(SQ1_CP1_DF_CH1_KW) > 10)):
@@ -110,12 +104,56 @@ def individual_chiller_efficiency_4(SQ1_CP1_DF_CH4_KWT, SQ1_CP1_DF_CH4_KW):
     except:
         return np.NaN
 
-def too_many_starts(df):
-    base_date = df['Date'].iloc[0]
-    print(base_date)
+def too_many_starts_1(date, SQ1_CP1_DF_CH1_KW):
+    try:
+        if(date in DATES_SET_1):
+            if(float(SQ1_CP1_DF_CH1_KW) < 10):
+                DATES_SET_1[date][0] += 1
+            else:
+                DATES_SET_1[date][1] += 1
+        else:
+            DATES_SET_1[date] = [0,0]
+    except:
+        return np.NaN
 
-    sub_df = df[(df['Date'] == str(base_date))]
-    return sub_df
+def too_many_starts_2(date, SQ1_CP1_DF_CH2_KW):
+    try:
+        if(date in DATES_SET_2):
+            if(float(SQ1_CP1_DF_CH2_KW) < 10):
+                DATES_SET_2[date][0] += 1
+            else:
+                DATES_SET_2[date][1] += 1
+        else:
+            DATES_SET_2[date] = [0,0]
+    except:
+        return np.NaN
+
+def too_many_starts_3(date, SQ1_CP1_DF_CH3_KW):
+    try:
+        if(date in DATES_SET_3):
+            if(float(SQ1_CP1_DF_CH3_KW) < 10):
+                DATES_SET_3[date][0] += 1
+            else:
+                DATES_SET_3[date][1] += 1
+        else:
+            DATES_SET_3[date] = [0,0]
+    except:
+        return np.NaN
+
+def too_many_starts_4(date, SQ1_CP1_DF_CH4_KW):
+    try:
+        if(date in DATES_SET_4):
+            if(float(SQ1_CP1_DF_CH4_KW) < 10):
+                DATES_SET_4[date][0] += 1
+            else:
+                DATES_SET_4[date][1] += 1
+        else:
+            DATES_SET_4[date] = [0,0]
+    except:
+        return np.NaN
+
+def too_many_starts(df):
+    pass
 
 # For CP2 Cooling
 def is_free_cooling_operation(CP2CHOAT, CP2CH1M5, CP2CH2M10):
@@ -171,10 +209,7 @@ def fault_rule_implementation(data_file,mapping_file,filetype):
 
 @csrf_exempt
 def create_csv(request):
-    
     if request.method == 'POST':
-        # TODO: Make two buttons (one for uploading the column mapping and other for uploading the data in the CSV)
-       
         data_file = request.FILES["csv_file"]
         mapping_file = request.FILES["Mapping_file"]
         
@@ -187,19 +222,38 @@ def create_csv(request):
             df['low_delta_t_chiller'] = df.apply(
                 lambda row: low_delta_t_chiller(row['1CHWS'], row['1CHWR'], row['SQ1_CP1_DF_CH1_KW'], row['SQ1_CP1_DF_CH2_KW'], row['SQ1_CP1_DF_CH3_KW'], row['SQ1_CP1_DF_CH4_KW']), axis=1)
 
-            df['chiller_operating_during_unoccupied_hours'] = df.apply(
-                lambda row: chiller_operating_during_unoccupied_hours(row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH1_KW'], row['SQ1_CP1_DF_CH2_KW'], row['SQ1_CP1_DF_CH3_KW'], row['SQ1_CP1_DF_CH4_KW']), axis=1)
+            df['chiller_operating_during_unoccupied_hours_1'] = df.apply(
+                lambda row: chiller_operating_during_unoccupied_hours_1(row['Time'], row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH1_KW']), axis=1)
+            df['chiller_operating_during_unoccupied_hours_2'] = df.apply(
+                lambda row: chiller_operating_during_unoccupied_hours_2(row['Time'], row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH2_KW']), axis=1)
+            df['chiller_operating_during_unoccupied_hours_3'] = df.apply(
+                lambda row: chiller_operating_during_unoccupied_hours_3(row['Time'], row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH3_KW']), axis=1)
+            df['chiller_operating_during_unoccupied_hours_4'] = df.apply(
+                lambda row: chiller_operating_during_unoccupied_hours_4(row['Time'], row['SQ1_CP1_DF_OAT'], row['SQ1_CP1_DF_CH4_KW']), axis=1)
 
-            df['individual_chiller_efficiency'] = df.apply(
-                lambda row: individual_chiller_efficiency(row['SQ1_CP1_DF_CH1_KWT'], row['SQ1_CP1_DF_CH1_KW'], row['SQ1_CP1_DF_CH2_KWT'], row['SQ1_CP1_DF_CH2_KW'], row['SQ1_CP1_DF_CH3_KWT'], row['SQ1_CP1_DF_CH3_KW'], row['SQ1_CP1_DF_CH4_KWT'], row['SQ1_CP1_DF_CH4_KW']),
-                axis=1)
+            df['individual_chiller_efficiency_1'] = df.apply(
+                lambda row: individual_chiller_efficiency_1(row['SQ1_CP1_DF_CH1_KWT'], row['SQ1_CP1_DF_CH1_KW']), axis=1)
+            df['individual_chiller_efficiency_2'] = df.apply(
+                lambda row: individual_chiller_efficiency_2(row['SQ1_CP1_DF_CH2_KWT'], row['SQ1_CP1_DF_CH2_KW']), axis=1)
+            df['individual_chiller_efficiency_3'] = df.apply(
+                lambda row: individual_chiller_efficiency_3(row['SQ1_CP1_DF_CH3_KWT'], row['SQ1_CP1_DF_CH3_KW']), axis=1)
+            df['individual_chiller_efficiency_4'] = df.apply(
+                lambda row: individual_chiller_efficiency_4(row['SQ1_CP1_DF_CH4_KWT'], row['SQ1_CP1_DF_CH4_KW']), axis=1)
+
+            df.apply(lambda row: too_many_starts_1(str(row['Date']), row['SQ1_CP1_DF_CH1_KW']), axis=1)
+            df.apply(lambda row: too_many_starts_2(str(row['Date']), row['SQ1_CP1_DF_CH2_KW']), axis=1)
+            df.apply(lambda row: too_many_starts_3(str(row['Date']), row['SQ1_CP1_DF_CH3_KW']), axis=1)
+            df.apply(lambda row: too_many_starts_4(str(row['Date']), row['SQ1_CP1_DF_CH4_KW']), axis=1)
+            too_many_starts()
 
             # TODO: Dropdown to select which faults to choose
             # result = df.to_html(index=False)
             df['DateTime'] = df[['Date', 'Time']].apply(lambda x: ' '.join(x), axis=1)
 
-            filter_col = ['DateTime', 'low_delta_t_chiller',
-                          'chiller_operating_during_unoccupied_hours', 'individual_chiller_efficiency']
+            filter_col = ['DateTime',
+                          'low_delta_t_chiller',
+                          'chiller_operating_during_unoccupied_hours_1', 'chiller_operating_during_unoccupied_hours_2', 'chiller_operating_during_unoccupied_hours_3', 'chiller_operating_during_unoccupied_hours_4',
+                          'individual_chiller_efficiency_1', 'individual_chiller_efficiency_2', 'individual_chiller_efficiency_3', 'individual_chiller_efficiency_4']
 
             df = df[filter_col].T
             new_header = df.iloc[0]
@@ -207,8 +261,8 @@ def create_csv(request):
             df.columns = new_header
 
             filter_col_name = ['Low Delta T Chiller',
-                          'Chiller Operating During Unoccupied Hours',
-                          'Individual Chiller Efficiency']
+                          'Chiller Operating During Unoccupied Hours 1', 'Chiller Operating During Unoccupied Hours 2', 'Chiller Operating During Unoccupied Hours 3', 'Chiller Operating During Unoccupied Hours 4',
+                          'Individual Chiller Efficiency 1', 'Individual Chiller Efficiency 2', 'Individual Chiller Efficiency 3', 'Individual Chiller Efficiency 4']
 
             df.insert(loc=0, column='Fault Rules', value=filter_col_name)
 
@@ -268,6 +322,11 @@ def filterdata(request):
     if request.session.get('result'):
         result =  request.session.get('result')
         df = pd.DataFrame(json.loads(result))
+        # startdate, starttime = starttime.split('T')
+        # enddate, endtime = endtime.split('T')
+
+        # start = startdate + " " + starttime
+        # end = enddate + " " + endtime
         df = df.T
         new_header = df.iloc[0]
         df = df[1:]
