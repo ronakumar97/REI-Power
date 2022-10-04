@@ -244,7 +244,7 @@ def create_csv(request):
             df.apply(lambda row: too_many_starts_2(str(row['Date']), row['SQ1_CP1_DF_CH2_KW']), axis=1)
             df.apply(lambda row: too_many_starts_3(str(row['Date']), row['SQ1_CP1_DF_CH3_KW']), axis=1)
             df.apply(lambda row: too_many_starts_4(str(row['Date']), row['SQ1_CP1_DF_CH4_KW']), axis=1)
-            too_many_starts()
+            # too_many_starts()
 
             # TODO: Dropdown to select which faults to choose
             # result = df.to_html(index=False)
@@ -315,14 +315,10 @@ def download(request):
 def filterdata(request):
     starttime = pd.to_datetime(request.POST.get('starttime'))
     endtime = pd.to_datetime(request.POST.get('endtime'))
+    html_template = loader.get_template('Dashboard/Index.html')
     if request.session.get('result'):
         result =  request.session.get('result')
         df = pd.DataFrame(json.loads(result))
-        # startdate, starttime = starttime.split('T')
-        # enddate, endtime = endtime.split('T')
-
-        # start = startdate + " " + starttime
-        # end = enddate + " " + endtime
         df = df.T
         new_header = df.iloc[0]
         df = df[1:]
@@ -335,9 +331,19 @@ def filterdata(request):
         cols = df.columns.tolist()
         cols = cols[-1:] + cols[:-1]
         df = df[cols]
+        dataDictionary = {
+        'starttime': request.POST.get('starttime'),
+        'endtime': request.POST.get('endtime')
+        }
+
+        dataJSON = dumps(dataDictionary)
+        return HttpResponse(html_template.render({"dataframe": df, "data":dataDictionary}, request))
+    else:
+        return HttpResponse(html_template.render(), request)
+
     
-    html_template = loader.get_template('Dashboard/Index.html')
-    return HttpResponse(html_template.render({"dataframe": df}, request))
+    
+    
 
 @csrf_exempt
 def charts(request):
@@ -349,8 +355,6 @@ def charts(request):
             headers = list(df.columns)
             headers.remove('Date')
             headers.remove('Time')
-            
-            
             
     if request.method == "POST":
         # data_file = request.FILES["csv_file"]

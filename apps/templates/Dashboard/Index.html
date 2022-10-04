@@ -19,7 +19,7 @@ Specific Page CSS goes HERE  -->
 
         <div class="page-inner">
             
-            <div class="row">
+            <div class="">
                 <div class="card">
                     <div class="card-body">
                         <div class="card">
@@ -43,7 +43,7 @@ Specific Page CSS goes HERE  -->
                         <div class="table-responsive">
                             <table id="multi-filter-select" class="display table table-striped table-hover" >
                                 <thead>
-                                <tr style="border: 1px solid black;
+                                <tr style="border: 3px solid white;
                                 border-collapse: collapse;">
                                     {% for col in dataframe.columns %}
                                     <th>
@@ -51,25 +51,20 @@ Specific Page CSS goes HERE  -->
                                     {% endfor %}
                                 </tr>
                                 </thead>
-                                <!-- <tfoot>
-                                    <tr>
-                                    {% for col in dataframe.columns %}
-                                    <th>
-                                        {{col}}      </th>
-                                    {% endfor %}
-                                </tr>
-                                </tfoot> -->
+                          
                                 <tbody>
                                     {% for index, row in dataframe.iterrows %}
-                                    <tr style="border: 1px solid black;
+                                    <tr style="border: 5px solid white;
                                     border-collapse: collapse;">
                                     {% for cell in row %}
                                     {% if cell == True %}
-                                        <td bgcolor="red" style="color:red">
+                                        <td bgcolor="tomato" style="color:tomato; border: 1px solid white;
+                                        border-collapse: collapse;">
                                             {{cell}}
                                         </td>
                                     {% elif cell == False %}
-                                        <td bgcolor="green" style="color:green">
+                                        <td bgcolor="mediumseagreen" style="color:mediumseagreen; border: 1px solid white;
+                                        border-collapse: collapse;">
                                             {{cell}}
                                         </td>
                                     {% else %}
@@ -96,3 +91,27 @@ Specific Page CSS goes HERE  -->
 
 
 {% endblock content %}
+{% block javascripts %}
+<script>
+$(document).ready(function(){
+
+autoselectDates();
+
+}); 
+
+function autoselectDates() {
+    var data = JSON.parse("{{data|escapejs}}");
+    for(var x in data){
+        if(x == "starttime"){
+            $("#starttime").val(data[x])
+        }
+        if(x == "endtime"){
+            $("#endtime").val(data[x])
+        }
+
+
+    }
+  
+  }
+</script>
+{% endblock javascripts %}	
