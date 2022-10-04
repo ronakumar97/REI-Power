@@ -315,10 +315,6 @@ def download(request):
 def filterdata(request):
     starttime = pd.to_datetime(request.POST.get('starttime'))
     endtime = pd.to_datetime(request.POST.get('endtime'))
-    print(pd.to_datetime(starttime))
-    
-   
-    print(endtime)
     if request.session.get('result'):
         result =  request.session.get('result')
         df = pd.DataFrame(json.loads(result))
@@ -334,10 +330,14 @@ def filterdata(request):
         df['datetime'] = df.index
         df['datetime']= pd.to_datetime(df["datetime"])
         df = df[(df['datetime'] > starttime) &  (df['datetime'] < endtime)]
-
-        print(df)
+        df = df.T.iloc[:-1]
+        df['Fault Rules'] = df.index
+        cols = df.columns.tolist()
+        cols = cols[-1:] + cols[:-1]
+        df = df[cols]
     
-    return "successs"
+    html_template = loader.get_template('Dashboard/Index.html')
+    return HttpResponse(html_template.render({"dataframe": df}, request))
 
 @csrf_exempt
 def charts(request):
