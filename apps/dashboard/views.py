@@ -104,56 +104,94 @@ def individual_chiller_efficiency_4(SQ1_CP1_DF_CH4_KWT, SQ1_CP1_DF_CH4_KW):
     except:
         return np.NaN
 
-def too_many_starts_1(date, SQ1_CP1_DF_CH1_KW):
-    try:
-        if(date in DATES_SET_1):
-            if(float(SQ1_CP1_DF_CH1_KW) < 10):
-                DATES_SET_1[date][0] += 1
-            else:
-                DATES_SET_1[date][1] += 1
-        else:
-            DATES_SET_1[date] = [0,0]
-    except:
-        return np.NaN
-
-def too_many_starts_2(date, SQ1_CP1_DF_CH2_KW):
-    try:
-        if(date in DATES_SET_2):
-            if(float(SQ1_CP1_DF_CH2_KW) < 10):
-                DATES_SET_2[date][0] += 1
-            else:
-                DATES_SET_2[date][1] += 1
-        else:
-            DATES_SET_2[date] = [0,0]
-    except:
-        return np.NaN
-
-def too_many_starts_3(date, SQ1_CP1_DF_CH3_KW):
-    try:
-        if(date in DATES_SET_3):
-            if(float(SQ1_CP1_DF_CH3_KW) < 10):
-                DATES_SET_3[date][0] += 1
-            else:
-                DATES_SET_3[date][1] += 1
-        else:
-            DATES_SET_3[date] = [0,0]
-    except:
-        return np.NaN
-
-def too_many_starts_4(date, SQ1_CP1_DF_CH4_KW):
-    try:
-        if(date in DATES_SET_4):
-            if(float(SQ1_CP1_DF_CH4_KW) < 10):
-                DATES_SET_4[date][0] += 1
-            else:
-                DATES_SET_4[date][1] += 1
-        else:
-            DATES_SET_4[date] = [0,0]
-    except:
-        return np.NaN
 
 def too_many_starts(df):
-    pass
+    dates = df['Date'].unique()
+
+    frames = []
+
+    for date in dates:
+        sub_df = df[(df['Date'] == str(date))]
+        sub_df = time_switch_1(sub_df)
+        sub_df = time_switch_2(sub_df)
+        sub_df = time_switch_3(sub_df)
+        sub_df = time_switch_4(sub_df)
+        frames.append(sub_df)
+
+    result = pd.concat(frames)
+
+    return result
+def time_switch_1(sub_df):
+    off_switch, on_switch = 0,0
+    for index, row in sub_df.iterrows():
+        try:
+            if(float(row['SQ1_CP1_DF_CH1_KW']) < 10):
+                off_switch += 1
+            else:
+                on_switch += 1
+        except:
+            continue
+
+    if(on_switch > 4 and off_switch > 4):
+        sub_df['too_many_starts_1'] = [1] * sub_df.shape[0]
+    else:
+        sub_df['too_many_starts_1'] = [0] * sub_df.shape[0]
+
+    return sub_df
+
+def time_switch_2(sub_df):
+    off_switch, on_switch = 0,0
+    for index, row in sub_df.iterrows():
+        try:
+            if(float(row['SQ1_CP1_DF_CH2_KW']) < 10):
+                off_switch += 1
+            else:
+                on_switch += 1
+        except:
+            continue
+
+    if(on_switch > 4 and off_switch > 4):
+        sub_df['too_many_starts_2'] = [1] * sub_df.shape[0]
+    else:
+        sub_df['too_many_starts_2'] = [0] * sub_df.shape[0]
+
+    return sub_df
+
+def time_switch_3(sub_df):
+    off_switch, on_switch = 0,0
+    for index, row in sub_df.iterrows():
+        try:
+            if(float(row['SQ1_CP1_DF_CH3_KW']) < 10):
+                off_switch += 1
+            else:
+                on_switch += 1
+        except:
+            continue
+
+    if(on_switch > 4 and off_switch > 4):
+        sub_df['too_many_starts_3'] = [1] * sub_df.shape[0]
+    else:
+        sub_df['too_many_starts_3'] = [0] * sub_df.shape[0]
+
+    return sub_df
+
+def time_switch_4(sub_df):
+    off_switch, on_switch = 0,0
+    for index, row in sub_df.iterrows():
+        try:
+            if(float(row['SQ1_CP1_DF_CH4_KW']) < 10):
+                off_switch += 1
+            else:
+                on_switch += 1
+        except:
+            continue
+
+    if(on_switch > 4 and off_switch > 4):
+        sub_df['too_many_starts_4'] = [1] * sub_df.shape[0]
+    else:
+        sub_df['too_many_starts_4'] = [0] * sub_df.shape[0]
+
+    return sub_df
 
 # For CP2 Cooling
 def is_free_cooling_operation(CP2CHOAT, CP2CH1M5, CP2CH2M10):
@@ -212,7 +250,6 @@ def create_csv(request):
     if request.method == 'POST':
         data_file = request.FILES["csv_file"]
         mapping_file = request.FILES["Mapping_file"]
-        
 
         df = fault_rule_implementation(data_file, mapping_file,request.POST.get('filetype'))
         
@@ -240,11 +277,7 @@ def create_csv(request):
             df['individual_chiller_efficiency_4'] = df.apply(
                 lambda row: individual_chiller_efficiency_4(row['SQ1_CP1_DF_CH4_KWT'], row['SQ1_CP1_DF_CH4_KW']), axis=1)
 
-            df.apply(lambda row: too_many_starts_1(str(row['Date']), row['SQ1_CP1_DF_CH1_KW']), axis=1)
-            df.apply(lambda row: too_many_starts_2(str(row['Date']), row['SQ1_CP1_DF_CH2_KW']), axis=1)
-            df.apply(lambda row: too_many_starts_3(str(row['Date']), row['SQ1_CP1_DF_CH3_KW']), axis=1)
-            df.apply(lambda row: too_many_starts_4(str(row['Date']), row['SQ1_CP1_DF_CH4_KW']), axis=1)
-            # too_many_starts()
+            df = too_many_starts(df)
 
             # TODO: Dropdown to select which faults to choose
             # result = df.to_html(index=False)
@@ -253,7 +286,8 @@ def create_csv(request):
             filter_col = ['DateTime',
                           'low_delta_t_chiller',
                           'chiller_operating_during_unoccupied_hours_1', 'chiller_operating_during_unoccupied_hours_2', 'chiller_operating_during_unoccupied_hours_3', 'chiller_operating_during_unoccupied_hours_4',
-                          'individual_chiller_efficiency_1', 'individual_chiller_efficiency_2', 'individual_chiller_efficiency_3', 'individual_chiller_efficiency_4']
+                          'individual_chiller_efficiency_1', 'individual_chiller_efficiency_2', 'individual_chiller_efficiency_3', 'individual_chiller_efficiency_4',
+                          'too_many_starts_1', 'too_many_starts_2', 'too_many_starts_3', 'too_many_starts_4']
 
             df = df[filter_col].T
             new_header = df.iloc[0]
@@ -262,7 +296,8 @@ def create_csv(request):
 
             filter_col_name = ['Low Delta T Chiller',
                           'Chiller Operating During Unoccupied Hours 1', 'Chiller Operating During Unoccupied Hours 2', 'Chiller Operating During Unoccupied Hours 3', 'Chiller Operating During Unoccupied Hours 4',
-                          'Individual Chiller Efficiency 1', 'Individual Chiller Efficiency 2', 'Individual Chiller Efficiency 3', 'Individual Chiller Efficiency 4']
+                          'Individual Chiller Efficiency 1', 'Individual Chiller Efficiency 2', 'Individual Chiller Efficiency 3', 'Individual Chiller Efficiency 4',
+                          'Too Many Starts 1', 'Too Many Starts 2', 'Too Many Starts 3', 'Too Many Starts 4']
 
             df.insert(loc=0, column='Fault Rules', value=filter_col_name)
 
@@ -271,7 +306,6 @@ def create_csv(request):
             return HttpResponse(html_template.render({"dataframe": df}, request))
 
         elif(request.POST.get('filetype') == 'CP2'):
-           
             df['is_free_cooling_operation_results'] = df.apply(
                 lambda row: is_free_cooling_operation(row['CP2.CHOAT'], row['CP2.CH1.M5'], row['CP2.CH2.M10']), axis=1)
             df['chiller_water_temp_diff_results'] = df.apply(
