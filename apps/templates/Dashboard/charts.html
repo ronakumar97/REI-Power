@@ -14,7 +14,7 @@ Specific Page CSS goes HERE  -->
 
 </br></br>
 <body>
-<form action="/charts/" method="POST" enctype="multipart/form-data" class="form-horizontal"> 
+<form action="/charts/{{file}}" method="POST" enctype="multipart/form-data" class="form-horizontal"> 
 {% csrf_token %}
 </br>
 </br>
@@ -28,9 +28,15 @@ Specific Page CSS goes HERE  -->
                    
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-6 col-lg-4">
+                            <div class="col-md-6 col-lg-5">
                                 <div class="form-group">
-                                    
+                                   
+                                        <label for="filetype">File Type:</label>
+                                        <select class="form-control" name="filetype" id="filetype" disabled>
+                                            <option>CP1</option>
+                                            <option>CP2</option>
+                                        </select>
+                                    <br>
                                     <label for="fields">Select Fields:</label>
                                     <select name="fields" id="fields" class="form-control input-border-bottom" multiple>
                                     {% for x in headers %}
@@ -45,7 +51,6 @@ Specific Page CSS goes HERE  -->
                                     <option value="line">Line</option>
                                     <option value="bar">Bar</option>
                                     <option value="scatter">Scatter</option>
-                                    
                                 </select>
                                 </div>
 
@@ -55,6 +60,17 @@ Specific Page CSS goes HERE  -->
                                     </div> 
                                 </div>
                             </div>    
+                            {% if graph %}
+                            <div class="col-md-6 col-lg-5">
+                                <div class="form-group">                    
+                                    <div class="col-xs-12 col-md-offset-3" style="margin-bottom:10px;">
+                                         <a class="btn btn-primary" href="/downloadcsv/" style="float: right;"> Download </a>
+                                    </div> 
+                                </div>
+                            </div> 
+                            {% endif %}
+
+
                         </div>
                     </div>
                 </div>
@@ -64,7 +80,7 @@ Specific Page CSS goes HERE  -->
 </div>
 </form>
 
-<div id = "test"></div>
+
 {% if graph %}
 
 
@@ -98,13 +114,14 @@ autoselect();
 }); 
 
 function autoselect() {
+    $('#filetype').val("{{file}}")
     var data = JSON.parse("{{data|escapejs}}");
     for(var x in data){
         if(x == "yaxis"){
             $("#fields").val(data[x])
         }
         if(x == "type"){
-            $("#type").val(data[x])
+            $("#type").val(data[x]) 
         }
 
 

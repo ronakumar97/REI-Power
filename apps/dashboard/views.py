@@ -18,6 +18,8 @@ import datetime
 from plotly import express as px
 from django.shortcuts import redirect
 from json import dumps
+from pathlib import Path
+ts = pd.Timestamp
 
 UNOCCUPIED_HOURS_LIST = [23, 24, 0, 1, 2, 3, 4, 5]
 DATES_SET_1 = {}
@@ -208,17 +210,27 @@ def fault_rule_implementation(data_file,mapping_file,filetype):
     return df
 
 @csrf_exempt
-def create_csv(request):
+def create_csv(request, filetype=""):
+    html_template = loader.get_template('Dashboard/Index.html')
+    if filetype != "":
+        if filetype == "CP1":
+            filepath = Path('Files/Dashboard/sensor_data_results_CP1.csv') 
+        elif filetype == "CP2":
+            filepath = Path('Files/Dashboard/sensor_data_results_CP2.csv')
+        df = pd.read_csv(filepath)
+        return HttpResponse(html_template.render({"dataframe": df}, request))
+
     if request.method == 'POST':
         data_file = request.FILES["csv_file"]
         mapping_file = request.FILES["Mapping_file"]
         
 
         df = fault_rule_implementation(data_file, mapping_file,request.POST.get('filetype'))
-        
-        request.session['df'] = df.to_json(orient="records")
-
+       
         if(request.POST.get('filetype') == 'CP1'):
+            file = Path('Files/Dashboard/processeddata_cp1.csv')  
+            file.parent.mkdir(parents=True, exist_ok=True) 
+            df.to_csv(file,index=False)
             df['low_delta_t_chiller'] = df.apply(
                 lambda row: low_delta_t_chiller(row['1CHWS'], row['1CHWR'], row['SQ1_CP1_DF_CH1_KW'], row['SQ1_CP1_DF_CH2_KW'], row['SQ1_CP1_DF_CH3_KW'], row['SQ1_CP1_DF_CH4_KW']), axis=1)
 
@@ -265,13 +277,16 @@ def create_csv(request):
                           'Individual Chiller Efficiency 1', 'Individual Chiller Efficiency 2', 'Individual Chiller Efficiency 3', 'Individual Chiller Efficiency 4']
 
             df.insert(loc=0, column='Fault Rules', value=filter_col_name)
-
-            request.session['result'] = df.to_json(orient="records")
+            filepath = Path('Files/Dashboard/sensor_data_results_CP1.csv')  
+            filepath.parent.mkdir(parents=True, exist_ok=True) 
+            df.to_csv(filepath,index=False)
             html_template = loader.get_template('Dashboard/Index.html')
             return HttpResponse(html_template.render({"dataframe": df}, request))
 
         elif(request.POST.get('filetype') == 'CP2'):
-           
+            file = Path('Files/Dashboard/processeddata_cp2.csv')  
+            file.parent.mkdir(parents=True, exist_ok=True) 
+            df.to_csv(file,index=False)
             df['is_free_cooling_operation_results'] = df.apply(
                 lambda row: is_free_cooling_operation(row['CP2.CHOAT'], row['CP2.CH1.M5'], row['CP2.CH2.M10']), axis=1)
             df['chiller_water_temp_diff_results'] = df.apply(
@@ -295,74 +310,72 @@ def create_csv(request):
 
             filter_col_name=['Free cooling operation results','Chiller water temp diff results','Condensor water temp diff results','Condensor water reset temp results']
             df.insert(loc=0, column='Fault Rules', value=filter_col_name)
-            request.session['result'] = df.to_json(orient="records")
+            filepath = Path('Files/Dashboard/sensor_data_results_CP2.csv')  
+            filepath.parent.mkdir(parents=True, exist_ok=True) 
+            df.to_csv(filepath,index=False)
             html_template = loader.get_template('Dashboard/Index.html')
             return HttpResponse(html_template.render({"dataframe":df}, request))
                    
 
 @csrf_exempt
 def download(request):
-    df = pd.DataFrame()
-    if request.session.get('result'):
-        result =  request.session.get('result')
-        df = pd.DataFrame(json.loads(result))
-        
-        response = HttpResponse(df.to_csv(index=False),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename="sensor_data_results.csv"'
-        return response
+    filepath = Path('Files/Dashboard/sensor_data_results.csv') 
+    df = pd.read_csv(filepath)
+    response = HttpResponse(df.to_csv(index=False),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="sensor_data_results.csv"'
+    return response
 
 @csrf_exempt
 def filterdata(request):
     starttime = pd.to_datetime(request.POST.get('starttime'))
     endtime = pd.to_datetime(request.POST.get('endtime'))
+    print(starttime)
+    print(endtime)
     html_template = loader.get_template('Dashboard/Index.html')
-    if request.session.get('result'):
-        result =  request.session.get('result')
-        df = pd.DataFrame(json.loads(result))
-        df = df.T
-        new_header = df.iloc[0]
-        df = df[1:]
-        df.columns = new_header
-        df['datetime'] = df.index
-        df['datetime']= pd.to_datetime(df["datetime"])
-        df = df[(df['datetime'] > starttime) &  (df['datetime'] < endtime)]
-        df = df.T.iloc[:-1]
-        df['Fault Rules'] = df.index
-        cols = df.columns.tolist()
-        cols = cols[-1:] + cols[:-1]
-        df = df[cols]
-        dataDictionary = {
+    filepath = Path('Files/Dashboard/sensor_data_results.csv') 
+    df = pd.read_csv(filepath)
+    df = df.T
+    new_header = df.iloc[0]
+    df = df[1:]
+    df.columns = new_header
+    df['datetime'] = df.index
+    df['datetime']= pd.to_datetime(df["datetime"])
+    print(df.shape)
+    df = df[(df['datetime'] < endtime) & (df['datetime'] < endtime)]
+    print("-----")
+    print( df.shape)
+    df = df.T.iloc[:-1]
+    df['Fault Rules'] = df.index
+    cols = df.columns.tolist()
+    cols = cols[-1:] + cols[:-1]
+    df = df[cols]
+    dataDictionary = {
         'starttime': request.POST.get('starttime'),
         'endtime': request.POST.get('endtime')
         }
-
-        dataJSON = dumps(dataDictionary)
-        return HttpResponse(html_template.render({"dataframe": df, "data":dataDictionary}, request))
-    else:
-        return HttpResponse(html_template.render(), request)
+    dataJSON = dumps(dataDictionary)
+        
+    return HttpResponse(html_template.render({"dataframe": df, "data":dataJSON}, request))
+   
 
     
     
     
 
 @csrf_exempt
-def charts(request):
-    df = pd.DataFrame()
-    
-    if request.session.get('df'):
-            result =  request.session.get('df')
-            df = pd.DataFrame(json.loads(result))
-            headers = list(df.columns)
-            headers.remove('Date')
-            headers.remove('Time')
-            
+def charts(request,file):
+    if file == "CP1":
+        filepath = Path('Files/Dashboard/processeddata_cp1.csv') 
+    if file == "CP2":
+        filepath = Path('Files/Dashboard/processeddata_cp2.csv') 
+    df = pd.read_csv(filepath)    
+    headers = list(df.columns)
+    headers.remove('Date')
+    headers.remove('Time')
+     
+
     if request.method == "POST":
-        # data_file = request.FILES["csv_file"]
-        # mapping_file = request.FILES["Mapping_file"]
-        # print("refresh")
-        # df = fault_rule_implementation(data_file, mapping_file,request.POST.get('filetype'))
         df['DateTime'] = df[['Date', 'Time']].apply(lambda x: ' '.join(x), axis=1)
-        
         xaxis = 'DateTime'
         yaxis = request.POST.getlist('fields')
         if yaxis == '':
@@ -370,7 +383,6 @@ def charts(request):
         #df = px.data.gapminder().query("period in )
         type = request.POST.get("type")
         if type == 'bar':
-            print(xaxis)
             fig = px.bar(df, x=xaxis, y=yaxis,title="")
         elif type == 'scatter':
             fig = px.scatter(df, x=xaxis, y=yaxis,labels={"variable": "Components"},title='')
@@ -383,15 +395,29 @@ def charts(request):
         'yaxis': yaxis,
         'type': type
         }
-
         dataJSON = dumps(dataDictionary)
+        data = pd.DataFrame()
+        data['DateTime'] = df['DateTime']
+        data[yaxis] = df[yaxis]
+
+        filepath = Path('Files/Dashboard/filtered_data_results.csv')  
+        filepath.parent.mkdir(parents=True, exist_ok=True) 
+        data.to_csv(filepath,index=False) 
+        html_template = loader.get_template('Dashboard/charts.html')
+        return HttpResponse(html_template.render({"headers":headers, "graph":graph, "data":dataJSON,"file":file}, request))
         
-        html_template = loader.get_template('Dashboard/charts.html')
-        return HttpResponse(html_template.render({"headers":headers, "graph":graph, "data":dataJSON}, request))
     else:
-        print('getcall')
         html_template = loader.get_template('Dashboard/charts.html')
-        return HttpResponse(html_template.render({"headers":headers}, request)) 
+        return HttpResponse(html_template.render({"headers":headers,"file":file}, request)) 
+
+@csrf_exempt
+def downloadcsv(request):
+    filepath = Path('Files/Dashboard/filtered_data_results.csv') 
+    df = pd.read_csv(filepath)
+    response = HttpResponse(df.to_csv(index=False),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="filtered_data_results.csv"'
+    return response
+    
     
     
 
